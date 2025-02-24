@@ -1,17 +1,31 @@
-// App.js
-import React from "react";
-import QuoteForm from "./components/quoteForm";
-import "./index.css";
+import Navbar from "./components/Navbar";
+import HeroSection from "./components/HeroSection";
+import FeatureSection from "./components/FeatureSection";
+import ClaimsProcess from "./components/ClaimsProcess";
+import Partners from "./components/Partners";
+import Compliance from "./components/Compliance";
+import Pricing from "./components/Pricing";
+import Testimonials from "./components/Testimonials";
+import Footer from "./components/Footer";
+import About from "./components/About";
 
-const App = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-    <div className="container mx-auto p-4 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-        Get a Quote
-      </h1>
-      <QuoteForm />
-    </div>
-  </div>
-);
+const App = () => {
+	return (
+		<>
+			<Navbar />
+			<div className="max-w-7xl mx-auto pt-0 px-6">
+				<HeroSection />
+				<About />
+				<FeatureSection />
+				<Partners />
+				<ClaimsProcess />
+				<Compliance />
+				<Pricing />
+				<Testimonials />
+				<Footer />
+			</div>
+		</>
+	);
+};
 
 export default App;
