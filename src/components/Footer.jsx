@@ -33,7 +33,7 @@ const Footer = () => {
 						<ul className="space-y-3">
 							<li className="flex items-center gap-3">
 								<Phone className="w-5 h-5 text-blue-400" />
-								<span>078 7164 0095</span>
+								<span>087 7164 0095</span>
 							</li>
 							<li className="flex items-center gap-3">
 								<Mail className="w-5 h-5 text-blue-400" />
