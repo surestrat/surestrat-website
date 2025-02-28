@@ -10,7 +10,15 @@ lerna-debug.log*
 .env.local
 hooks/env.php
 db-config.php
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
 
+
+node_modules/
+dist/
 node_modules
 # dist
 # dist-ssr
