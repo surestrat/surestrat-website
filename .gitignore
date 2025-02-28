@@ -9,6 +9,7 @@ lerna-debug.log*
 .env
 .env.local
 hooks/env.php
+db-config.php
 
 node_modules
 # dist
