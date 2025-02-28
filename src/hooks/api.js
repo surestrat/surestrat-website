@@ -8,16 +8,21 @@ export const submitQuoteForm = async (formData) => {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify(formData),
+			credentials: "include", // Include credentials
+			mode: "cors", // Enable CORS
 		});
 
-		const data = await response.json();
-
 		if (!response.ok) {
-			throw new Error(data.error || "Failed to submit form");
+			const errorData = await response.json().catch(() => ({
+				error: `HTTP error! status: ${response.status}`,
+			}));
+			throw new Error(errorData.error || "Failed to submit form");
 		}
 
+		const data = await response.json();
 		return data;
 	} catch (error) {
+		console.error("Form submission error:", error);
 		throw new Error(error.message);
 	}
 };
