@@ -7,12 +7,23 @@ export default defineConfig({
 	plugins: [react(), tailwindcss()],
 
 	build: {
-		target: ["es2015", "chrome63"],
-		polyfillDynamicImport: true,
 		outDir: "dist",
-		rollupOIptions: {
+		assetsDir: "assets",
+		emptyOutDir: true,
+		rollupOptions: {
 			output: {
+				manualChunks: undefined,
 				format: "iife",
+			},
+		},
+	},
+
+	server: {
+		proxy: {
+			"/api": {
+				target: "https://surestrat.co.za",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api/, ""),
 			},
 		},
 	},
