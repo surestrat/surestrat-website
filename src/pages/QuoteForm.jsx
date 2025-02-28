@@ -15,6 +15,7 @@ import {
 import PillHeader from "@components/ui/PillHeader";
 import Heading from "@components/ui/Heading";
 import SubHeading from "@components/ui/SubHeading";
+import { submitQuoteForm } from "@hooks/api";
 
 const QuoteForm = () => {
 	const [openSections, setOpenSections] = useState({
@@ -23,23 +24,56 @@ const QuoteForm = () => {
 		vehicle: false,
 		property: false,
 		lifestyle: false,
-		medical: false,
+		business: false,
 	});
+
+	// const {
+	// 	register,
+	// 	handleSubmit,
+	// 	watch,
+	// 	formState: { errors },
+	// } = useForm();
+	// const insuranceType = watch("insuranceType");
+
+	// const toggleSection = (section) => {
+	// 	setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+	// };
+
+	// const onSubmit = (data) => {
+	// 	console.log(data);
+	// };
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [submitError, setSubmitError] = useState(null);
+	const [submitSuccess, setSubmitSuccess] = useState(false);
 
 	const {
 		register,
 		handleSubmit,
 		watch,
+		reset,
 		formState: { errors },
 	} = useForm();
-	const insuranceType = watch("insuranceType");
 
 	const toggleSection = (section) => {
 		setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
 	};
 
-	const onSubmit = (data) => {
-		console.log(data);
+	const onSubmit = async (data) => {
+		try {
+			setIsSubmitting(true);
+			setSubmitError(null);
+
+			await submitQuoteForm(data);
+			setSubmitSuccess(true);
+			reset();
+
+			alert("Your quote request has been submitted successfully!");
+		} catch (error) {
+			setSubmitError(error.message);
+			alert("Failed to submit form. Please try again.");
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	const SectionHeader = ({ title, section, isOpen, icon: Icon }) => (
@@ -124,6 +158,38 @@ const QuoteForm = () => {
 										<option value="north-west">North West</option>
 										<option value="northern-cape">Northern Cape</option>
 									</select>
+									<select
+										{...register("maritalStatus")}
+										className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+									>
+										<option value="">Marital Status</option>
+										<option value="single">Single</option>
+										<option value="married">Married</option>
+										<option value="divorced">Divorced</option>
+										<option value="widowed">Widowed</option>
+									</select>
+									<select
+										{...register("employmentStatus")}
+										className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+									>
+										<option value="">Employment Status</option>
+										<option value="employed">Employed</option>
+										<option value="self-employed">Self-Employed</option>
+										<option value="unemployed">Unemployed</option>
+										<option value="retired">Retired</option>
+									</select>
+									<input
+										{...register("occupation")}
+										placeholder="Occupation"
+										className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+									/>
+
+									<input
+										{...register("monthlyIncome")}
+										placeholder="Monthly Income (Optional)"
+										type="number"
+										className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+									/>
 								</div>
 							)}
 						</div>
@@ -143,16 +209,10 @@ const QuoteForm = () => {
 										{ label: "Home Insurance", icon: Home, value: "home" },
 										{ label: "Life Insurance", icon: Heart, value: "life" },
 										{
-											label: "Medical Aid",
-											icon: Stethoscope,
-											value: "medical",
-										},
-										{
 											label: "Business Insurance",
 											icon: Building2,
 											value: "business",
 										},
-										{ label: "Travel Insurance", icon: Plane, value: "travel" },
 									].map(({ label, icon: Icon, value }) => (
 										<label
 											key={value}
@@ -348,58 +408,6 @@ const QuoteForm = () => {
 							</div>
 						)}
 
-						{/* Conditional Medical Aid Section */}
-						{watch("insuranceTypes")?.includes("medical") && (
-							<div>
-								<SectionHeader
-									title="Medical Aid Details"
-									section="medical"
-									isOpen={openSections.medical}
-									icon={Stethoscope}
-								/>
-								{openSections.medical && (
-									<div className="p-4 space-y-6">
-										<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-											<select
-												{...register("dependents")}
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											>
-												<option value="">Number of Dependents</option>
-												<option value="0">No dependents</option>
-												<option value="1">1 dependent</option>
-												<option value="2">2 dependents</option>
-												<option value="3+">3+ dependents</option>
-											</select>
-											<select
-												{...register("medicalPlan")}
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											>
-												<option value="">Preferred Plan Type</option>
-												<option value="basic">Basic Coverage</option>
-												<option value="standard">Standard Coverage</option>
-												<option value="comprehensive">Comprehensive</option>
-											</select>
-											<select
-												{...register("chronicConditions")}
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											>
-												<option value="">Chronic Conditions</option>
-												<option value="none">None</option>
-												<option value="diabetes">Diabetes</option>
-												<option value="hypertension">Hypertension</option>
-												<option value="other">Other</option>
-											</select>
-											<input
-												{...register("currentProvider")}
-												placeholder="Current Medical Aid (if any)"
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											/>
-										</div>
-									</div>
-								)}
-							</div>
-						)}
-
 						{/* Conditional Business Insurance Section */}
 						{watch("insuranceTypes")?.includes("business") && (
 							<div>
@@ -448,71 +456,61 @@ const QuoteForm = () => {
 								)}
 							</div>
 						)}
-
-						{/* Conditional Travel Insurance Section */}
-						{watch("insuranceTypes")?.includes("travel") && (
-							<div>
-								<SectionHeader
-									title="Travel Insurance Details"
-									section="travel"
-									isOpen={openSections.travel}
-									icon={Plane}
+						{/* Terms and Conditions */}
+						<div className="p-4 space-y-4 border rounded-lg bg-gray-50">
+							<label className="flex items-start gap-2 cursor-pointer">
+								<input
+									type="checkbox"
+									{...register("termsAccepted", { required: true })}
+									className="mt-1 w-4 h-4 text-blue-600"
 								/>
-								{openSections.travel && (
-									<div className="p-4 space-y-6">
-										<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-											<input
-												{...register("travelDates")}
-												type="date"
-												placeholder="Travel Date"
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											/>
-											<select
-												{...register("destination")}
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											>
-												<option value="">Destination</option>
-												<option value="europe">Europe</option>
-												<option value="americas">Americas</option>
-												<option value="asia">Asia</option>
-												<option value="africa">Africa</option>
-												<option value="australia">Australia</option>
-											</select>
-											<select
-												{...register("travelPurpose")}
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											>
-												<option value="">Purpose of Travel</option>
-												<option value="business">Business</option>
-												<option value="leisure">Leisure</option>
-												<option value="study">Study</option>
-											</select>
-											<select
-												{...register("travelDuration")}
-												className="p-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500"
-											>
-												<option value="">Duration of Travel</option>
-												<option value="short">1-7 days</option>
-												<option value="medium">8-14 days</option>
-												<option value="long">15-30 days</option>
-												<option value="extended">30+ days</option>
-											</select>
-										</div>
-									</div>
-								)}
-							</div>
-						)}
+								<span className="text-sm text-gray-600">
+									I agree to the{" "}
+									<a href="/terms" className="text-blue-600 hover:underline">
+										Terms and Conditions
+									</a>{" "}
+									and{" "}
+									<a href="/privacy" className="text-blue-600 hover:underline">
+										Privacy Policy
+									</a>
+								</span>
+							</label>
+							{errors.termsAccepted && (
+								<p className="text-sm text-red-500">
+									You must accept the terms and conditions
+								</p>
+							)}
+						</div>
 
+						{/* Submit Button */}
 						<button
 							type="submit"
-							className="relative w-full p-4 text-lg font-semibold text-white transition-all duration-300 rounded-full group"
+							disabled={isSubmitting}
+							className="relative w-full p-4 text-lg font-semibold text-white transition-all duration-300 rounded-full group disabled:opacity-50"
 						>
 							<span className="absolute inset-0 transition-all duration-300 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 group-hover:scale-105" />
 							<span className="relative flex items-center justify-center gap-2">
-								Get Your Free Quote
-								<Shield className="w-5 h-5" />
+								{isSubmitting ? "Submitting..." : "Get Your Free Quote"}
+								{submitSuccess ? (
+									<CheckCircle2 className="w-5 h-5" />
+								) : (
+									<Shield className="w-5 h-5" />
+								)}
 							</span>
 						</button>
+
+						{/* Status Messages */}
+						{submitError && (
+							<div className="p-4 mt-4 text-sm text-red-600 bg-red-50 rounded-lg">
+								{submitError}
+							</div>
+						)}
+
+						{submitSuccess && (
+							<div className="p-4 mt-4 text-sm text-green-600 bg-green-50 rounded-lg">
+								Quote submitted successfully! We'll contact you shortly.
+							</div>
+						)}
 					</form>
 				</div>
 			</div>
