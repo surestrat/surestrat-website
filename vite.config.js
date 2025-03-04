@@ -10,20 +10,32 @@ export default defineConfig({
 		outDir: "dist",
 		assetsDir: "assets",
 		emptyOutDir: true,
+		sourcemap: false, // Disable sourcemaps in production
 		rollupOptions: {
 			output: {
-				manualChunks: undefined,
-				format: "iife",
+				manualChunks: {
+					vendor: ["react", "react-dom", "react-router-dom"],
+					ui: ["framer-motion", "lucide-react"],
+				},
 			},
 		},
 	},
 
+	// server: {
+	// 	proxy: {
+	// 		"/api": {
+	// 			target: "https://surestrat.co.za",
+	// 			changeOrigin: true,
+	// 			rewrite: (path) => path.replace(/^\/api/, ""),
+	// 		},
+	// 	},
+	// },
 	server: {
 		proxy: {
 			"/api": {
-				target: "https://surestrat.co.za",
+				target: process.env.VITE_API_URL,
 				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api/, ""),
+				secure: false,
 			},
 		},
 	},

@@ -1,4 +1,11 @@
 import Logo from "@assets/images/surestrat-logo.png";
+import CarIns from "@assets/images/car-ins.jpg";
+import HomeIns from "@assets/images/home-ins.jpg";
+import LifeIns from "@assets/images/life-ins4.jpg";
+import MedicalAidIns from "@assets/images/medical-aid-ins.jpg";
+import BusinessProtectionIns from "@assets/images/business-protection-ins.jpg";
+import GroupBenefitsIns from "@assets/images/group-benefits-ins.jpg";
+
 import {
 	Building2,
 	Car,
@@ -86,7 +93,7 @@ export const insuranceProducts = [
 		title: "Motor Vehicle Cover",
 		description:
 			"Comprehensive & third party cover from top SA insurers like Santam, Discovery Insure & OUTsurance.",
-		image: "/car-ins.jpg",
+		image: CarIns,
 		color: "from-blue-500 to-blue-600",
 		link: "/car-insurance",
 	},
@@ -95,7 +102,7 @@ export const insuranceProducts = [
 		title: "Buildings & Contents",
 		description:
 			"Complete home protection including thatch risk, security & natural disasters for SA homeowners.",
-		image: "/home-ins.jpg",
+		image: HomeIns,
 		color: "from-indigo-500 to-indigo-600",
 		link: "/home-insurance",
 	},
@@ -104,7 +111,7 @@ export const insuranceProducts = [
 		title: "Life & Funeral Plans",
 		description:
 			"Affordable funeral plans and life coverage from Old Mutual, Sanlam and other trusted SA providers.",
-		image: "/life-ins4.jpg",
+		image: LifeIns,
 		color: "from-purple-500 to-purple-600",
 		link: "/life-insurance",
 	},
@@ -113,7 +120,7 @@ export const insuranceProducts = [
 		title: "Medical Aid Schemes",
 		description:
 			"Leading medical schemes including Discovery Health, Momentum & Bonitas with gap cover options.",
-		image: "/medical-aid-ins.jpg",
+		image: MedicalAidIns,
 		color: "from-cyan-500 to-cyan-600",
 		link: "/medical-aid",
 	},
@@ -122,7 +129,7 @@ export const insuranceProducts = [
 		title: "Business Protection",
 		description:
 			"BEE-compliant business insurance solutions including asset, fleet & liability coverage.",
-		image: "/business-protection-ins.jpg",
+		image: BusinessProtectionIns,
 		color: "from-teal-500 to-teal-600",
 		link: "/business-insurance",
 	},
@@ -131,7 +138,7 @@ export const insuranceProducts = [
 		title: "Group Benefits",
 		description:
 			"Employee benefits, group life & pension schemes for South African businesses.",
-		image: "/group-benefits-ins.jpg",
+		image: GroupBenefitsIns,
 		color: "from-sky-500 to-sky-600",
 	},
 ];

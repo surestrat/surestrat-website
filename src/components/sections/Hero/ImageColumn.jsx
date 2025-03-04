@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
-
+import HeroIMG from "@assets/images/hero3.png";
 const ImageColumn = () => {
 	return (
 		<motion.div
@@ -21,7 +21,7 @@ const ImageColumn = () => {
 				</div>
 
 				<img
-					src="/hero3.png"
+					src={HeroIMG}
 					alt="Insurance Advisor"
 					width={600}
 					height={600}
