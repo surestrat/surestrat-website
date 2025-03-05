@@ -1,31 +1,92 @@
-# Root .htaccess
+
+
 <IfModule mod_rewrite.c>
-	RewriteEngine On RewriteBase / # Force HTTPS RewriteCond %{HTTPS} off
-	RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301] # API Requests
-	RewriteRule ^api/.* api/index.php [L] # SPA Routing RewriteCond
-	%{REQUEST_FILENAME} !-f RewriteCond %{REQUEST_FILENAME} !-d RewriteRule .
-	index.html [L]
+    RewriteEngine On
+    RewriteBase /
+    
+    # Force HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # API Requests
+    RewriteRule ^api/.* api/index.php [L]
+    
+    # SPA Routing
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . index.html [L]
 </IfModule>
 
 # Security Headers
 <IfModule mod_headers.c>
-	Header set X-Content-Type-Options "nosniff" Header set X-XSS-Protection "1;
-	mode=block" Header set X-Frame-Options "SAMEORIGIN" Header set Referrer-Policy
-	"strict-origin-when-cross-origin" Header set Strict-Transport-Security
-	"max-age=31536000; includeSubDomains"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    # Additional recommended security headers
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
 # PHP Settings
 <IfModule mod_php.c>
-	php_value upload_max_filesize 10M php_value post_max_size 10M php_value
-	max_execution_time 300 php_value max_input_time 300
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 128M
+    php_flag display_errors off
+    php_flag log_errors on
 </IfModule>
 
 # Caching
 <IfModule mod_expires.c>
-	ExpiresActive On ExpiresByType image/jpg "access plus 1 year" ExpiresByType
-	image/jpeg "access plus 1 year" ExpiresByType image/png "access plus 1 year"
-	ExpiresByType image/svg+xml "access plus 1 year" ExpiresByType text/css
-	"access plus 1 month" ExpiresByType application/javascript "access plus 1
-	month"
+    ExpiresActive On
+    
+    # Images
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/ico "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # CSS, JavaScript, Fonts
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    
+    # Default
+    ExpiresDefault "access plus 2 days"
 </IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript text/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Protect against script injection
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2})
+    RewriteRule .* index.php [F,L]
+</IfModule>
+
+# Protect sensitive files
+<FilesMatch "(\.(bak|config|dist|inc|log|sql|sh|env|git|yml|md|svn|htaccess|htpasswd|ini)|~)$">
+    Order deny,allow
+    Deny from all
+    Satisfy All
+</FilesMatch>
