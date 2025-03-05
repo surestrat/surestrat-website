@@ -6,10 +6,19 @@ class Database {
 
     private function __construct() {
         try {
+            // Add error logging to see what's happening
+            error_log("Attempting database connection to: " . DB_HOST);
+            
+            // Test if credentials are available
+            error_log("DB credentials check - Host: " . (DB_HOST ? "Set" : "Not set") . 
+                      ", User: " . (DB_USER ? "Set" : "Not set") . 
+                      ", DB Name: " . (DB_NAME ? "Set" : "Not set"));
+            
             $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
             if ($this->conn->connect_error) {
                 throw new Exception('Connection failed: ' . $this->conn->connect_error);
             }
+            error_log("Database connection successful");
             $this->conn->set_charset('utf8mb4');
         } catch (Exception $e) {
             error_log("Database Connection Error: " . $e->getMessage());
