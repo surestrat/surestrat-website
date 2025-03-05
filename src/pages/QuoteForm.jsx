@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import { handleQuoteSubmission } from "@hooks/api";
+import { logger } from "@utils/logger";
 
 // UI Components
 import PillHeader from "@components/ui/PillHeader";
@@ -22,7 +23,7 @@ import {
 } from "@components/form";
 
 const QuoteForm = () => {
-	console && console.log("📋 QuoteForm component rendered");
+	logger.log("📋 QuoteForm component rendered");
 
 	const [openSections, setOpenSections] = useState({
 		personal: true,
@@ -53,31 +54,40 @@ const QuoteForm = () => {
 	// Log form errors whenever they change
 	useEffect(() => {
 		if (Object.keys(errors).length > 0) {
-			console && console.log("🚨 Form validation errors:", errors);
+			logger.warn("🚨 Form validation errors:", errors);
 		}
 	}, [errors]);
 
 	const toggleSection = (section) => {
-		console && console.log(`🔄 Toggling section: ${section}`);
+		logger.debug(`🔄 Toggling section: ${section}`);
 		setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
 	};
 
 	const onSubmit = async (data) => {
-		console && console.log("📝 Form submitted with data:", data);
-		await handleQuoteSubmission(
-			data,
-			setIsSubmitting,
-			setSubmitError,
-			setSubmitSuccess,
-			reset
-		);
+		logger.info("📝 Form submission started with data:", data);
+		setIsSubmitting(true);
+
+		try {
+			logger.debug("⏳ Calling handleQuoteSubmission");
+			await handleQuoteSubmission(
+				data,
+				setIsSubmitting,
+				setSubmitError,
+				setSubmitSuccess,
+				reset
+			);
+			logger.info("✅ Form submission completed successfully");
+		} catch (error) {
+			logger.error("❌ Form submission error:", error);
+			setSubmitError(error.message || "An unexpected error occurred");
+			setIsSubmitting(false);
+		}
 	};
 
 	// Watch insurance types to log changes
 	const insuranceTypes = watch("insuranceTypes");
 	useEffect(() => {
-		console &&
-			console.log("🔍 Selected insurance types changed:", insuranceTypes);
+		logger.debug("🔍 Selected insurance types changed:", insuranceTypes);
 	}, [insuranceTypes]);
 
 	const formVariants = {
@@ -180,6 +190,7 @@ const QuoteForm = () => {
 								<SubmitButton
 									isSubmitting={isSubmitting}
 									submitSuccess={submitSuccess}
+									onClick={() => logger.debug("🖱️ Submit button clicked")}
 								/>
 
 								{/* Error Message */}

@@ -1,4 +1,5 @@
 import { toast } from "react-hot-toast";
+import { logger } from "@utils/logger";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/submit-quote`;
 
@@ -44,31 +45,40 @@ export const handleQuoteSubmission = async (
 	setSubmitSuccess,
 	reset
 ) => {
-	console && console.log("🏁 Quote submission started with data:", data);
+	logger.info("Starting quote submission process");
 	try {
 		setIsSubmitting(true);
-		setSubmitError(null);
+		logger.debug("Form data to be submitted:", data);
 
-		const formattedData = {
-			...data,
-			insuranceTypes: Array.isArray(data.insuranceTypes)
-				? data.insuranceTypes
-				: [],
-		};
+		const response = await fetch("/api/submit-quote.php", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		});
 
-		console && console.log("🔄 Formatted submission data:", formattedData);
+		const result = await response.json();
+		logger.debug("API response received:", result);
 
-		const result = await submitQuoteForm(formattedData);
-		console && console.log("🎉 Quote submission successful:", result);
+		if (!response.ok) {
+			throw new Error(result.error || "Failed to submit quote");
+		}
+
+		logger.info("Quote submitted successfully, ID:", result.quoteId);
 		setSubmitSuccess(true);
-		reset();
-		toast.success("Quote submitted successfully!");
+		reset(); // Reset form on success
+
+		// After 3 seconds, reset the success state
+		setTimeout(() => {
+			setSubmitSuccess(false);
+			logger.debug("Reset submit success state");
+		}, 3000);
 	} catch (error) {
-		console && console.error("💔 Quote submission failed:", error);
-		setSubmitError(error.message);
-		toast.error(error.message || "Failed to submit quote");
+		logger.error("Error submitting quote:", error);
+		setSubmitError(error.message || "An unexpected error occurred");
 	} finally {
-		console && console.log("🏷️ Quote submission process completed");
 		setIsSubmitting(false);
+		logger.debug("Quote submission process completed");
 	}
 };

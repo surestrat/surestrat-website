@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, m as motion, P as PhoneCall, E as ExternalLink, S as Shield, A as AnimatePresence, X as X$1, M as Menu, C as CircleCheck, a as Car, B as Building2, H as Heart, b as Briefcase, U as Users, c as Scale, d as BookOpen, e as Building, f as Umbrella, T as Trophy, g as MapPin, h as Star, i as Phone, F as FileCheck, k as Clock, l as ArrowRight, n as Mail, o as Facebook, p as Twitter, L as Linkedin, q as ChevronUp, r as ChevronDown, I as Info, s as User, t as House } from "./ui-BD4Mhqix.js";
+import { j as jsxRuntimeExports, m as motion, P as PhoneCall, E as ExternalLink, S as Shield, A as AnimatePresence, X as X$1, M as Menu, C as CircleCheck, a as Car, B as Building2, H as Heart, b as Briefcase, U as Users, c as Scale, d as BookOpen, e as Building, f as Umbrella, T as Trophy, g as MapPin, h as Star, i as Phone, F as FileCheck, k as Clock, l as ArrowRight, n as Mail, o as Facebook, p as Twitter, L as Linkedin, q as ChevronUp, r as ChevronDown, s as LoaderCircle, t as CircleCheckBig, I as Info, u as User, v as House } from "./ui-B9_VwuSa.js";
 import { a as requireReact, b as requireReactDom, u as useLocation, r as reactExports, L as Link, R as React, B as BrowserRouter, c as Routes, d as Route } from "./vendor-BbcOoei1.js";
 (function polyfill() {
   const relList = document.createElement("link").relList;
@@ -17473,59 +17473,63 @@ var ve = ({ id: e2, className: t2, style: r2, onHeightUpdate: s2, children: a2 }
     return reactExports.createElement(ve, { id: d2.id, key: d2.id, onHeightUpdate: p2.updateHeight, className: d2.visible ? De : "", style: S }, d2.type === "custom" ? f(d2.message, d2) : a2 ? a2(d2) : reactExports.createElement(C, { toast: d2, position: h2 }));
   }));
 };
-const API_URL = `${"https://surestrat.co.za/"}/submit-quote`;
-const submitQuoteForm = async (formData) => {
+const logger = {
+  log: (...args) => {
+    {
+      console.log(...args);
+    }
+  },
+  error: (...args) => {
+    {
+      console.error(...args);
+    }
+  },
+  warn: (...args) => {
+    {
+      console.warn(...args);
+    }
+  },
+  info: (...args) => {
+    {
+      console.info(...args);
+    }
+  },
+  debug: (...args) => {
+    {
+      console.debug(...args);
+    }
+  }
+};
+const handleQuoteSubmission = async (data, setIsSubmitting, setSubmitError, setSubmitSuccess, reset) => {
+  logger.info("Starting quote submission process");
   try {
-    console && console.log("🚀 Submitting quote form data:", formData);
-    console && console.log("🔗 API URL:", API_URL);
-    console && console.log("📤 Sending API request...");
-    const response = await fetch(API_URL, {
+    setIsSubmitting(true);
+    logger.debug("Form data to be submitted:", data);
+    const response = await fetch("/api/submit-quote.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(formData),
-      credentials: "include",
-      mode: "cors"
+      body: JSON.stringify(data)
     });
-    console && console.log("📥 API response status:", response.status);
+    const result = await response.json();
+    logger.debug("API response received:", result);
     if (!response.ok) {
-      const errorData = await response.json();
-      console && console.error("❌ API error response:", errorData);
-      throw new Error(
-        errorData.error || `HTTP error! status: ${response.status}`
-      );
+      throw new Error(result.error || "Failed to submit quote");
     }
-    const responseData = await response.json();
-    console && console.log("✅ API success response:", responseData);
-    return responseData;
-  } catch (error) {
-    console && console.error("❌ Form submission error:", error);
-    throw error;
-  }
-};
-const handleQuoteSubmission = async (data, setIsSubmitting, setSubmitError, setSubmitSuccess, reset) => {
-  console && console.log("🏁 Quote submission started with data:", data);
-  try {
-    setIsSubmitting(true);
-    setSubmitError(null);
-    const formattedData = {
-      ...data,
-      insuranceTypes: Array.isArray(data.insuranceTypes) ? data.insuranceTypes : []
-    };
-    console && console.log("🔄 Formatted submission data:", formattedData);
-    const result = await submitQuoteForm(formattedData);
-    console && console.log("🎉 Quote submission successful:", result);
+    logger.info("Quote submitted successfully, ID:", result.quoteId);
     setSubmitSuccess(true);
     reset();
-    c.success("Quote submitted successfully!");
+    setTimeout(() => {
+      setSubmitSuccess(false);
+      logger.debug("Reset submit success state");
+    }, 3e3);
   } catch (error) {
-    console && console.error("💔 Quote submission failed:", error);
-    setSubmitError(error.message);
-    c.error(error.message || "Failed to submit quote");
+    logger.error("Error submitting quote:", error);
+    setSubmitError(error.message || "An unexpected error occurred");
   } finally {
-    console && console.log("🏷️ Quote submission process completed");
     setIsSubmitting(false);
+    logger.debug("Quote submission process completed");
   }
 };
 const FormBackdrop = ({ children }) => {
@@ -17613,24 +17617,46 @@ const FormSection = ({ isOpen, children, className = "" }) => {
     }
   );
 };
-const SubmitButton = ({ isSubmitting, submitSuccess, text = "Get Your Free Quote" }) => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+const SubmitButton = ({
+  isSubmitting,
+  submitSuccess,
+  text = "Get Your Free Quote",
+  onClick
+}) => {
+  logger.debug("Rendering SubmitButton component", {
+    isSubmitting,
+    submitSuccess
+  });
+  const handleClick = (e2) => {
+    if (!isSubmitting) {
+      logger.info("Submit button clicked");
+      if (onClick) onClick(e2);
+    } else {
+      logger.debug("Submit button clicked while already submitting - ignoring");
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-center mt-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
     motion.button,
     {
+      whileHover: { scale: isSubmitting ? 1 : 1.03 },
+      whileTap: { scale: isSubmitting ? 1 : 0.98 },
       type: "submit",
       disabled: isSubmitting,
-      whileHover: { scale: 1.02 },
-      whileTap: { scale: 0.98 },
-      className: "relative w-full p-4 text-lg font-semibold text-white transition-all duration-300 rounded-full group disabled:opacity-50",
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute inset-0 transition-all duration-300 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 group-hover:scale-105" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "relative flex items-center justify-center gap-2", children: [
-          isSubmitting ? "Submitting..." : text,
-          submitSuccess ? /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { className: "w-5 h-5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Shield, { className: "w-5 h-5" })
-        ] })
-      ]
+      onClick: handleClick,
+      className: `w-full md:w-auto px-8 py-4 rounded-xl font-semibold text-white shadow-lg 
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+          ${submitSuccess ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"}
+          ${isSubmitting ? "opacity-80 cursor-not-allowed" : ""}
+        `,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "flex items-center justify-center gap-2", children: isSubmitting ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "w-5 h-5 animate-spin" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Submitting..." })
+      ] }) : submitSuccess ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheckBig, { className: "w-5 h-5" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Quote Submitted!" })
+      ] }) : text })
     }
-  );
+  ) });
 };
 const TermsSection = ({ register, errors }) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-4 space-y-4 border rounded-lg bg-gray-50", children: [
@@ -18195,7 +18221,7 @@ const BusinessSection = ({ openSections, toggleSection, register, errors }) => {
 };
 const QuoteForm = () => {
   var _a, _b, _c, _d;
-  console && console.log("📋 QuoteForm component rendered");
+  logger.log("📋 QuoteForm component rendered");
   const [openSections, setOpenSections] = reactExports.useState({
     personal: true,
     insurance: true,
@@ -18221,26 +18247,35 @@ const QuoteForm = () => {
   });
   reactExports.useEffect(() => {
     if (Object.keys(errors).length > 0) {
-      console && console.log("🚨 Form validation errors:", errors);
+      logger.warn("🚨 Form validation errors:", errors);
     }
   }, [errors]);
   const toggleSection = (section) => {
-    console && console.log(`🔄 Toggling section: ${section}`);
+    logger.debug(`🔄 Toggling section: ${section}`);
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
   const onSubmit = async (data) => {
-    console && console.log("📝 Form submitted with data:", data);
-    await handleQuoteSubmission(
-      data,
-      setIsSubmitting,
-      setSubmitError,
-      setSubmitSuccess,
-      reset
-    );
+    logger.info("📝 Form submission started with data:", data);
+    setIsSubmitting(true);
+    try {
+      logger.debug("⏳ Calling handleQuoteSubmission");
+      await handleQuoteSubmission(
+        data,
+        setIsSubmitting,
+        setSubmitError,
+        setSubmitSuccess,
+        reset
+      );
+      logger.info("✅ Form submission completed successfully");
+    } catch (error) {
+      logger.error("❌ Form submission error:", error);
+      setSubmitError(error.message || "An unexpected error occurred");
+      setIsSubmitting(false);
+    }
   };
   const insuranceTypes = watch("insuranceTypes");
   reactExports.useEffect(() => {
-    console && console.log("🔍 Selected insurance types changed:", insuranceTypes);
+    logger.debug("🔍 Selected insurance types changed:", insuranceTypes);
   }, [insuranceTypes]);
   const formVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -18342,7 +18377,8 @@ const QuoteForm = () => {
                 SubmitButton,
                 {
                   isSubmitting,
-                  submitSuccess
+                  submitSuccess,
+                  onClick: () => logger.debug("🖱️ Submit button clicked")
                 }
               ),
               submitError && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 mt-4 text-center text-white rounded-lg bg-red-500/90", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: submitError }) })
