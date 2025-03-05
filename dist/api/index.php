@@ -4,8 +4,16 @@ initializeSecureSession();
 
 // CORS Headers
 header('Access-Control-Allow-Origin: ' . ALLOWED_ORIGIN);
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, Authorization');
+header('Access-Control-Allow-Credentials: true');
+header('Content-Type: application/json');
+
+# Find your CORS Headers section and update:
+// CORS Headers
+header('Access-Control-Allow-Origin: *'); // Consider restricting this in production
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, Authorization');
 header('Access-Control-Allow-Credentials: true');
 header('Content-Type: application/json');
 
