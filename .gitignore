@@ -16,7 +16,7 @@ db-config.php
 .env.development
 .env.production
 
-
+credentials.php
 node_modules/
 dist/
 node_modules
