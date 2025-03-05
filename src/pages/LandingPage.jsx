@@ -12,33 +12,34 @@ import Footer from "@components/Footer";
 // import SurveyComponent from "@components/SurveyComponent";
 
 const LandingPage = () => {
-	console.log("📄 LandingPage component rendered");
+	console && console.log("📄 LandingPage component rendered");
 
 	useEffect(() => {
-		console.log("⏱️ LandingPage mounted");
+		console && console.log("⏱️ LandingPage mounted");
 		const startTime = performance.now();
 
 		return () => {
 			const endTime = performance.now();
-			console.log(
-				`⏱️ LandingPage unmounted after ${(endTime - startTime).toFixed(2)}ms`
-			);
+			console &&
+				console.log(
+					`⏱️ LandingPage unmounted after ${(endTime - startTime).toFixed(2)}ms`
+				);
 		};
 	}, []);
 
 	useEffect(() => {
-		console.log("🖼️ Checking images loading status...");
+		console && console.log("🖼️ Checking images loading status...");
 
 		// Track when all images have loaded
 		window.addEventListener("load", () => {
-			console.log("🖼️ All resources loaded");
+			console && console.log("🖼️ All resources loaded");
 		});
 
 		// Track performance metrics
 		if (window.performance) {
 			const perfData = window.performance.timing;
 			const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-			console.log(`⚡ Page load performance: ${pageLoadTime}ms`);
+			console && console.log(`⚡ Page load performance: ${pageLoadTime}ms`);
 		}
 	}, []);
 

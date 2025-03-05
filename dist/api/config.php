@@ -8,7 +8,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/error.log');
 
 // Database configuration
-define('DB_HOST', getenv_default('DB_HOST', 'localhost'));
+define('DB_HOST', getenv_default('DB_HOST', 'localhost:3306'));
 define('DB_USER', getenv_default('DB_USER', ''));
 define('DB_PASS', getenv_default('DB_PASS', ''));
 define('DB_NAME', getenv_default('DB_NAME', ''));

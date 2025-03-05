@@ -4,26 +4,28 @@ class ErrorBoundary extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { hasError: false, error: null, errorInfo: null };
-		console.log("🛡️ ErrorBoundary initialized");
+		console && console.log("🛡️ ErrorBoundary initialized");
 	}
 
 	static getDerivedStateFromError(error) {
-		console.error("⛔ ErrorBoundary caught an error:", error.message);
+		console &&
+			console.error("⛔ ErrorBoundary caught an error:", error.message);
 		return { hasError: true };
 	}
 
 	componentDidCatch(error, errorInfo) {
-		console.error("💥 Error details:", error);
-		console.error("📑 Component stack:", errorInfo.componentStack);
+		console && console.error("💥 Error details:", error);
+		console && console.error("📑 Component stack:", errorInfo.componentStack);
 
 		// Log browser and environment information for debugging
-		console.log("🔍 Debug environment:", {
-			userAgent: navigator.userAgent,
-			language: navigator.language,
-			screenSize: `${window.innerWidth}x${window.innerHeight}`,
-			url: window.location.href,
-			timestamp: new Date().toISOString(),
-		});
+		console &&
+			console.log("🔍 Debug environment:", {
+				userAgent: navigator.userAgent,
+				language: navigator.language,
+				screenSize: `${window.innerWidth}x${window.innerHeight}`,
+				url: window.location.href,
+				timestamp: new Date().toISOString(),
+			});
 
 		this.setState({
 			error,
@@ -50,7 +52,7 @@ class ErrorBoundary extends React.Component {
 						)}
 						<button
 							onClick={() => {
-								console.log("🔄 User attempted page refresh");
+								console && console.log("🔄 User attempted page refresh");
 								window.location.reload();
 							}}
 							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"

@@ -18,9 +18,9 @@ const RouteLogger = () => {
 	const location = useLocation();
 
 	useEffect(() => {
-		console.log(`🧭 Route changed to: ${location.pathname}`);
-		console.log(`📊 Query params:`, location.search);
-		console.log(`🔍 Current state:`, location.state);
+		console && console.log(`🧭 Route changed to: ${location.pathname}`);
+		console && console.log(`📊 Query params:`, location.search);
+		console && console.log(`🔍 Current state:`, location.state);
 	}, [location]);
 
 	return null;
@@ -28,7 +28,7 @@ const RouteLogger = () => {
 
 // ENTRY POINT
 function App() {
-	console.log("🚀 App initialized");
+	console && console.log("🚀 App initialized");
 
 	return (
 		<ErrorBoundary>

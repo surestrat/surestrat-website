@@ -1,0 +1,16 @@
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/surestr2/public_html/
+    # Create a backup of the current site
+    - if [ -d $DEPLOYPATH ]; then mkdir -p ~/site_backups/$(date +%Y%m%d_%H%M%S); cp -R $DEPLOYPATH/* ~/site_backups/$(date +%Y%m%d_%H%M%S)/; fi
+    # Clean existing deploy directory (except for some sensitive files)
+    - find $DEPLOYPATH -mindepth 1 -not -path "$DEPLOYPATH/api*" -not -path "$DEPLOYPATH/.htaccess" -not -path "$DEPLOYPATH/.env*" -delete
+    # Copy new files
+    - /bin/cp -R dist/* $DEPLOYPATH
+    # Ensure proper permissions
+    - find $DEPLOYPATH -type f -exec chmod 644 {} \;
+    - find $DEPLOYPATH -type d -exec chmod 755 {} \;
+    # Keep the API directory permissions more restrictive
+    - find $DEPLOYPATH/api -type f -exec chmod 640 {} \;
+    # Log deployment
+    - echo "Deployment completed at $(date)" > $DEPLOYPATH/deploy_log.txt
