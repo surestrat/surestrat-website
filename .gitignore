@@ -18,7 +18,6 @@ db-config.php
 
 credentials.php
 node_modules/
-# dist/
 node_modules
 # dist
 # dist-ssr
