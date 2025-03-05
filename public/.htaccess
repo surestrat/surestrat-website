@@ -25,7 +25,8 @@
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
     # Additional recommended security headers
-    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://surestrat.co.za"
+	    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://surestrat.co.za"
+    
     Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
@@ -90,3 +91,18 @@ Options -Indexes
     Deny from all
     Satisfy All
 </FilesMatch>
+
+<IfModule mod_mime.c>
+    # JavaScript
+    AddType application/javascript .js
+    AddType application/javascript .mjs
+    # CSS
+    AddType text/css .css
+    # Fonts
+    AddType font/woff .woff
+    AddType font/woff2 .woff2
+    # JSON
+    AddType application/json .json
+    # Source maps
+    AddType application/json .map
+</IfModule>
