@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import ErrorBoundary from "@components/ErrorBoundary";
 import ToastProvider from "./components/providers/ToastProvider";
 
+// ENTRY POINT
 function App() {
 	return (
 		<ErrorBoundary>

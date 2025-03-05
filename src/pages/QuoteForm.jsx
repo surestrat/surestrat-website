@@ -22,11 +22,11 @@ import FormBackdrop from "@components/ui/FormBackdrop";
 const QuoteForm = () => {
 	const [openSections, setOpenSections] = useState({
 		personal: true,
-		insurance: false,
-		vehicle: false,
-		property: false,
-		lifestyle: false,
-		business: false,
+		insurance: true,
+		vehicle: true,
+		property: true,
+		lifestyle: true,
+		business: true,
 	});
 
 	const [isSubmitting, setIsSubmitting] = useState(false);

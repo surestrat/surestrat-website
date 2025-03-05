@@ -30,12 +30,22 @@ export default defineConfig({
 	// 		},
 	// 	},
 	// },
+	// server: {
+	// 	proxy: {
+	// 		"/api": {
+	// 			target: process.env.VITE_API_URL,
+	// 			changeOrigin: true,
+	// 			secure: false,
+	// 		},
+	// 	},
+	// },
 	server: {
+		port: 3000,
 		proxy: {
 			"/api": {
-				target: process.env.VITE_API_URL,
+				target: "http://localhost:8000",
 				changeOrigin: true,
-				secure: false,
+				rewrite: (path) => path.replace(/^\/api/, ""),
 			},
 		},
 	},
