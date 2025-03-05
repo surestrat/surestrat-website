@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import FormBackdrop from "@components/ui/FormBackdrop";
 
 const QuoteForm = () => {
-	console.log("📋 QuoteForm component rendered");
+	console && console.log("📋 QuoteForm component rendered");
 
 	const [openSections, setOpenSections] = useState({
 		personal: true,
@@ -51,17 +51,17 @@ const QuoteForm = () => {
 	// Log form errors whenever they change
 	useEffect(() => {
 		if (Object.keys(errors).length > 0) {
-			console.log("🚨 Form validation errors:", errors);
+			console && console.log("🚨 Form validation errors:", errors);
 		}
 	}, [errors]);
 
 	const toggleSection = (section) => {
-		console.log(`🔄 Toggling section: ${section}`);
+		console && console.log(`🔄 Toggling section: ${section}`);
 		setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
 	};
 
 	const onSubmit = async (data) => {
-		console.log("📝 Form submitted with data:", data);
+		console && console.log("📝 Form submitted with data:", data);
 		await handleQuoteSubmission(
 			data,
 			setIsSubmitting,
@@ -74,7 +74,8 @@ const QuoteForm = () => {
 	// Watch insurance types to log changes
 	const insuranceTypes = watch("insuranceTypes");
 	useEffect(() => {
-		console.log("🔍 Selected insurance types changed:", insuranceTypes);
+		console &&
+			console.log("🔍 Selected insurance types changed:", insuranceTypes);
 	}, [insuranceTypes]);
 
 	const formVariants = {

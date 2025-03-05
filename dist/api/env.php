@@ -16,7 +16,7 @@ if (file_exists($env_file)) {
 // Fallback to credentials.php if .user.ini couldn't be loaded
 if (!$loaded_env) {
     // Path assuming API is in public_html/api/ and variables is in cPanel root
-    $fallback_file = $_SERVER['DOCUMENT_ROOT'] . '/../secrets/credentials.php';
+    $fallback_file = $_SERVER['DOCUMENT_ROOT'] . 'credentials.php';
     if (file_exists($fallback_file)) {
         include_once($fallback_file);
     }
