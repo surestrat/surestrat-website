@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import {
@@ -20,6 +20,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import FormBackdrop from "@components/ui/FormBackdrop";
 
 const QuoteForm = () => {
+	console.log("📋 QuoteForm component rendered");
+
 	const [openSections, setOpenSections] = useState({
 		personal: true,
 		insurance: true,
@@ -46,11 +48,20 @@ const QuoteForm = () => {
 		mode: "onBlur",
 	});
 
+	// Log form errors whenever they change
+	useEffect(() => {
+		if (Object.keys(errors).length > 0) {
+			console.log("🚨 Form validation errors:", errors);
+		}
+	}, [errors]);
+
 	const toggleSection = (section) => {
+		console.log(`🔄 Toggling section: ${section}`);
 		setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
 	};
 
 	const onSubmit = async (data) => {
+		console.log("📝 Form submitted with data:", data);
 		await handleQuoteSubmission(
 			data,
 			setIsSubmitting,
@@ -59,6 +70,12 @@ const QuoteForm = () => {
 			reset
 		);
 	};
+
+	// Watch insurance types to log changes
+	const insuranceTypes = watch("insuranceTypes");
+	useEffect(() => {
+		console.log("🔍 Selected insurance types changed:", insuranceTypes);
+	}, [insuranceTypes]);
 
 	const formVariants = {
 		hidden: { opacity: 0, y: 20 },

@@ -3,17 +3,38 @@ import ClaimsPortalPage from "@pages/ClaimsPortalPage";
 import QuoteForm from "@pages/QuoteForm";
 import "@styles/index.css";
 import { Toaster } from "react-hot-toast";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Suspense } from "react";
+import {
+	BrowserRouter as Router,
+	Routes,
+	Route,
+	useLocation,
+} from "react-router-dom";
+import { Suspense, useEffect } from "react";
 import ErrorBoundary from "@components/ErrorBoundary";
 import ToastProvider from "./components/providers/ToastProvider";
 
+// Route logger component
+const RouteLogger = () => {
+	const location = useLocation();
+
+	useEffect(() => {
+		console.log(`🧭 Route changed to: ${location.pathname}`);
+		console.log(`📊 Query params:`, location.search);
+		console.log(`🔍 Current state:`, location.state);
+	}, [location]);
+
+	return null;
+};
+
 // ENTRY POINT
 function App() {
+	console.log("🚀 App initialized");
+
 	return (
 		<ErrorBoundary>
 			<Suspense fallback={<div>Loading...</div>}>
 				<Router>
+					<RouteLogger />
 					<ToastProvider />
 					{/* Toast notifications */}
 					<Toaster

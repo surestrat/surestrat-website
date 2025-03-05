@@ -3,15 +3,32 @@ import React from "react";
 class ErrorBoundary extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { hasError: false };
+		this.state = { hasError: false, error: null, errorInfo: null };
+		console.log("🛡️ ErrorBoundary initialized");
 	}
 
 	static getDerivedStateFromError(error) {
+		console.error("⛔ ErrorBoundary caught an error:", error.message);
 		return { hasError: true };
 	}
-	//192.168.10.1
+
 	componentDidCatch(error, errorInfo) {
-		console.error("Error caught by boundary:", error, errorInfo);
+		console.error("💥 Error details:", error);
+		console.error("📑 Component stack:", errorInfo.componentStack);
+
+		// Log browser and environment information for debugging
+		console.log("🔍 Debug environment:", {
+			userAgent: navigator.userAgent,
+			language: navigator.language,
+			screenSize: `${window.innerWidth}x${window.innerHeight}`,
+			url: window.location.href,
+			timestamp: new Date().toISOString(),
+		});
+
+		this.setState({
+			error,
+			errorInfo,
+		});
 	}
 
 	render() {
@@ -26,8 +43,16 @@ class ErrorBoundary extends React.Component {
 							Please try refreshing the page or contact support if the problem
 							persists.
 						</p>
+						{this.state.error && (
+							<div className="mb-4 p-4 bg-gray-100 rounded text-left overflow-auto max-h-40 text-xs">
+								<pre>{this.state.error.toString()}</pre>
+							</div>
+						)}
 						<button
-							onClick={() => window.location.reload()}
+							onClick={() => {
+								console.log("🔄 User attempted page refresh");
+								window.location.reload();
+							}}
 							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
 						>
 							Refresh Page

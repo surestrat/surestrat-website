@@ -1,5 +1,6 @@
 <?php
-
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/Database.php';
 
 header('Content-Type: application/json');
 
@@ -34,6 +35,7 @@ try {
     $db = Database::getInstance();
     $conn = $db->getConnection();
 
+    
     $sql = "INSERT INTO insurance_quotes (
         first_name, 
         last_name,
