@@ -19,6 +19,15 @@ export default defineConfig({
 				},
 			},
 		},
+		minify: {
+			terserOptions: {
+				compress: {
+					// Keep console logs even in production
+					drop_console: false,
+					pure_funcs: [],
+				},
+			},
+		},
 	},
 
 	// server: {
