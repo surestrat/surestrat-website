@@ -1,17 +1,54 @@
 <?php
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/Database.php';
+// Enable error display for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
+// Set headers to allow cross-origin requests and specify content type
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// Only allow POST method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
+// Log the incoming request for debugging
+$requestLog = [
+    'time' => date('Y-m-d H:i:s'),
+    'method' => $_SERVER['REQUEST_METHOD'],
+    'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'Not set',
+    'content_length' => $_SERVER['CONTENT_LENGTH'] ?? 'Not set'
+];
+file_put_contents('request_log.txt', print_r($requestLog, true) . "\n", FILE_APPEND);
+
 try {
-    $data = json_decode(file_get_contents('php://input'), true);
+    // Get raw POST data
+    $rawData = file_get_contents('php://input');
+    
+    // Log the raw data for debugging
+    file_put_contents('raw_data.txt', $rawData . "\n", FILE_APPEND);
+    
+    // Parse JSON data
+    $data = json_decode($rawData, true);
+    
+    // Check if JSON parsing was successful
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON: ' . json_last_error_msg(), 400);
+    }
+    
+    // Log the parsed data
+    file_put_contents('parsed_data.txt', print_r($data, true) . "\n", FILE_APPEND);
     
     // Validate required fields
     $requiredFields = ['firstName', 'lastName', 'idNumber', 'phone', 'email', 'province', 'insuranceTypes'];
@@ -31,57 +68,22 @@ try {
         throw new Exception('Invalid phone number format', 400);
     }
 
-    // Initialize database connection
-    $db = Database::getInstance();
-    $conn = $db->getConnection();
-
-    
-    $sql = "INSERT INTO insurance_quotes (
-        first_name, 
-        last_name,
-        id_number,
-        phone,
-        email,
-        province,
-        insurance_types,
-        form_data,
-        created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        throw new Exception('Database error: ' . $conn->error);
-    }
-
-    $stmt->bind_param(
-        "ssssssss",
-        $data['firstName'],
-        $data['lastName'],
-        $data['idNumber'],
-        $data['phone'],
-        $data['email'],
-        $data['province'],
-        json_encode($data['insuranceTypes']),
-        json_encode($data)
-    );
-
-    if (!$stmt->execute()) {
-        throw new Exception('Failed to submit quote: ' . $stmt->error);
-    }
-
+    // Mock successful response for testing
     echo json_encode([
         'success' => true,
         'message' => 'Quote submitted successfully',
-        'quoteId' => $conn->insert_id
+        'quoteId' => rand(1000, 9999), // Generate a random ID for testing
+        'timestamp' => date('Y-m-d H:i:s')
     ]);
 
 } catch (Exception $e) {
     $statusCode = $e->getCode() ?: 500;
     http_response_code($statusCode);
-    echo json_encode(['error' => $e->getMessage()]);
-    error_log("Quote Submission Error: " . $e->getMessage());
-} finally {
-    if (isset($db)) {
-        $db->close();
-    }
+    echo json_encode([
+        'error' => $e->getMessage(),
+        'code' => $statusCode
+    ]);
+    
+    // Log the error
+    file_put_contents('error_log.txt', date('Y-m-d H:i:s') . ": " . $e->getMessage() . "\n", FILE_APPEND);
 }

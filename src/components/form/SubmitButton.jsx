@@ -9,17 +9,19 @@ const SubmitButton = ({
 	text = "Get Your Free Quote",
 	onClick,
 }) => {
-	logger.debug("Rendering SubmitButton component", {
+	logger.debug("🔘 Rendering SubmitButton component", {
 		isSubmitting,
 		submitSuccess,
 	});
 
 	const handleClick = (e) => {
 		if (!isSubmitting) {
-			logger.info("Submit button clicked");
+			logger.info("🖱️ Submit button clicked");
 			if (onClick) onClick(e);
 		} else {
-			logger.debug("Submit button clicked while already submitting - ignoring");
+			logger.debug(
+				"🔄 Submit button clicked while already submitting - ignoring"
+			);
 		}
 	};
 

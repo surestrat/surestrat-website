@@ -55,6 +55,7 @@ const QuoteForm = () => {
 	useEffect(() => {
 		if (Object.keys(errors).length > 0) {
 			logger.warn("🚨 Form validation errors:", errors);
+			logger.warn("Form validation errors:", error);
 		}
 	}, [errors]);
 
