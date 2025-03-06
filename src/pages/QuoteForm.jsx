@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import { handleQuoteSubmission } from "@hooks/api";
 import { logger } from "@utils/logger";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { quoteFormSchema } from "@schemas/quoteFormSchema";
 
 // UI Components
 import PillHeader from "@components/ui/PillHeader";
@@ -49,13 +51,13 @@ const QuoteForm = () => {
 			insuranceTypes: [],
 		},
 		mode: "onBlur",
+		resolver: zodResolver(quoteFormSchema), // Add Zod resolver
 	});
 
 	// Log form errors whenever they change
 	useEffect(() => {
 		if (Object.keys(errors).length > 0) {
 			logger.warn("🚨 Form validation errors:", errors);
-			logger.warn("Form validation errors:", error);
 		}
 	}, [errors]);
 
@@ -66,10 +68,9 @@ const QuoteForm = () => {
 
 	const onSubmit = async (data) => {
 		logger.info("📝 Form submission started with data:", data);
-		setIsSubmitting(true);
 
 		try {
-			logger.debug("⏳ Calling handleQuoteSubmission");
+			// Let handleQuoteSubmission handle validation and submission
 			await handleQuoteSubmission(
 				data,
 				setIsSubmitting,

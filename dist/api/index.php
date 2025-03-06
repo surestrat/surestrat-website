@@ -3,7 +3,7 @@ require_once __DIR__ . '/config.php';
 initializeSecureSession();
 
 // CORS Headers - using only one set, removing duplicates
-header('Access-Control-Allow-Origin: *'); // Consider restricting this in production
+header('Access-Control-Allow-Origin: https://surestrat.co.za'); // Consider restricting this in production
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, Authorization');
 header('Access-Control-Allow-Credentials: true');

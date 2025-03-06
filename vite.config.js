@@ -72,6 +72,7 @@ export default defineConfig({
 			"@services": "/src/services",
 			"@config": "/src/config",
 			"@constants": "/src/constants",
+			"@schemas": "/src/schemas",
 		},
 	},
 });

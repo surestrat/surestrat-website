@@ -1,53 +1,31 @@
 import { logger } from "@utils/logger";
+import {
+	personalSchema,
+	insuranceTypesSchema,
+	vehicleSchema,
+	propertySchema,
+	lifeSchema,
+	businessSchema,
+	termsSchema,
+	apiResponseSchema,
+} from "@schemas/quoteFormSchema";
+import { z } from "zod";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/submit-quote`;
-
-export const submitQuoteForm = async (formData) => {
-	try {
-		logger.log("🚀 Submitting quote form data:", formData);
-		logger.log("🔗 API URL:", API_URL);
-
-		logger.log("📤 Sending API request...");
-		const response = await fetch(API_URL, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(formData),
-			credentials: "include",
-			mode: "cors",
-		});
-
-		logger.log("📥 API response status:", response.status);
-
-		// Store the response text first to debug it
-		const responseText = await response.text();
-		logger.log("📄 Raw API response:", responseText);
-
-		let responseData;
-		try {
-			// Try to parse the response as JSON
-			responseData = JSON.parse(responseText);
-		} catch (parseError) {
-			logger.error("❌ JSON parse error:", parseError);
-			logger.error("❌ Invalid JSON response:", responseText);
-			throw new Error("Server returned invalid JSON response");
-		}
-
-		if (!response.ok) {
-			logger.error("❌ API error response:", responseData);
-			throw new Error(
-				responseData.error || `HTTP error! status: ${response.status}`
-			);
-		}
-
-		logger.log("✅ API success response:", responseData);
-		return responseData;
-	} catch (error) {
-		logger.error("❌ Form submission error:", error);
-		throw error;
-	}
-};
+// Combine all schemas
+const quoteFormSchema = z
+	.object({})
+	.merge(personalSchema)
+	.merge(insuranceTypesSchema)
+	.merge(
+		z.object({
+			termsAccepted: termsSchema.shape.termsAccepted,
+			// All other fields are optional and validated conditionally
+			...vehicleSchema.partial().shape,
+			...propertySchema.partial().shape,
+			...lifeSchema.partial().shape,
+			...businessSchema.partial().shape,
+		})
+	);
 
 export const handleQuoteSubmission = async (
 	data,
@@ -58,8 +36,23 @@ export const handleQuoteSubmission = async (
 ) => {
 	logger.info("🏁 Quote submission started with data:", data);
 	try {
+		// First, validate the form data with zod
+		const validationResult = quoteFormSchema.safeParse(data);
+
+		if (!validationResult.success) {
+			const formattedErrors = validationResult.error.format();
+			logger.error("❌ Validation errors:", formattedErrors);
+
+			// Get the first error message to display to user
+			const firstError = validationResult.error.errors[0];
+			throw new Error(firstError?.message || "Form validation failed");
+		}
+
 		setIsSubmitting(true);
-		logger.debug("🔄 Formatted submission data:", data);
+
+		// Use validated and transformed data
+		const validatedData = validationResult.data;
+		logger.debug("🔄 Validated submission data:", validatedData);
 
 		// Check which API endpoint to use based on environment
 		const useLocalApi =
@@ -68,7 +61,7 @@ export const handleQuoteSubmission = async (
 
 		let apiUrl = useLocalApi
 			? "/api/submit-quote.php"
-			: `${import.meta.env.VITE_API_URL}/submit-quote`;
+			: `${import.meta.env.VITE_API_URL}/api/submit-quote`;
 		logger.debug("🔗 Using API endpoint:", apiUrl);
 
 		const response = await fetch(apiUrl, {
@@ -76,27 +69,59 @@ export const handleQuoteSubmission = async (
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify(data),
+			body: JSON.stringify(validatedData),
 		});
 
 		logger.debug("📥 API response status:", response.status);
 
-		// Get the raw text response first to debug if needed
+		// First check if response is ok based on status code
+		if (!response.ok) {
+			// Try to get error message from response body
+			try {
+				const errorData = await response.json();
+				throw new Error(
+					errorData.error || `HTTP error! status: ${response.status}`
+				);
+			} catch (parseError) {
+				// If can't parse JSON from error response
+				throw new Error(`HTTP error! Status: ${response.status}`);
+			}
+		}
+
+		// Get the text response first to debug if needed
 		const responseText = await response.text();
 		logger.debug("📄 Raw API response:", responseText);
 
+		// Handle empty response
+		if (!responseText || responseText.trim() === "") {
+			throw new Error("Server returned empty response");
+		}
+
 		let result;
 		try {
-			// Try to parse as JSON, but handle non-JSON responses gracefully
-			result = responseText ? JSON.parse(responseText) : {};
+			// Try to parse as JSON
+			result = JSON.parse(responseText);
+
+			// Validate the response against our schema
+			const validatedResponse = apiResponseSchema.safeParse(result);
+			if (!validatedResponse.success) {
+				logger.error(
+					"❌ API response validation error:",
+					validatedResponse.error
+				);
+				throw new Error("Server returned unexpected response format");
+			}
+
+			result = validatedResponse.data;
+
+			// Double check success flag from API
+			if (!result.success) {
+				throw new Error(result.error || "Failed to submit quote");
+			}
 		} catch (parseError) {
 			logger.error("❌ JSON parse error:", parseError);
 			logger.error("❌ Invalid JSON response:", responseText);
 			throw new Error("Server returned invalid JSON response");
-		}
-
-		if (!response.ok) {
-			throw new Error(result.error || "Failed to submit quote");
 		}
 
 		logger.info("✅ Quote submitted successfully, ID:", result.quoteId);
