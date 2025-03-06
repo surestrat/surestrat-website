@@ -38,9 +38,10 @@ export const handleQuoteSubmission = async (
 			window.location.hostname === "localhost" ||
 			window.location.hostname === "127.0.0.1";
 
+		// Fix the API URL - notice the double slash in your logs
 		let apiUrl = useLocalApi
 			? "/api/submit-quote.php"
-			: `${import.meta.env.VITE_API_URL}/api/submit-quote`;
+			: `${import.meta.env.VITE_API_URL}/api/submit-quote.php`; // Add .php and fix double slash
 
 		logger.debug("🔗 Using API endpoint:", apiUrl);
 
@@ -63,6 +64,9 @@ export const handleQuoteSubmission = async (
 			if (!responseText || responseText.trim() === "") {
 				throw new Error("Server returned empty response");
 			}
+
+			// Log the raw text before attempting to parse
+			console.log("Raw response text:", responseText);
 
 			let result;
 			try {
@@ -87,7 +91,19 @@ export const handleQuoteSubmission = async (
 			} catch (parseError) {
 				logger.error("❌ JSON parse error:", parseError);
 				logger.error("❌ Invalid JSON response:", responseText);
-				throw new Error("Server returned invalid JSON response");
+				// If the response contains HTML tags, it's likely the server returned an HTML error page
+				if (
+					responseText.includes("<html") ||
+					responseText.includes("<!DOCTYPE")
+				) {
+					throw new Error(
+						"Server returned HTML instead of JSON. The server might be misconfigured."
+					);
+				} else {
+					throw new Error(
+						`Failed to parse server response: ${parseError.message}`
+					);
+				}
 			}
 
 			logger.info("✅ Quote submitted successfully, ID:", result.quoteId);

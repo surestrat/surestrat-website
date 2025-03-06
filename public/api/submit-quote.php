@@ -10,6 +10,12 @@ header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
+
+$requestTime = date('Y-m-d H:i:s');
+
+file_put_contents('api_log.txt', "===== New Request: $requestTime ========\n", FILE_APPEND);
+
+
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
