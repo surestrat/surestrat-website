@@ -1,6 +1,6 @@
 -- Create database if not exists
-CREATE DATABASE IF NOT EXISTS surestr2_quotes_db;
-USE surestr2_quotes_db;
+CREATE DATABASE IF NOT EXISTS surestr2_quotes_database;
+USE surestr2_quotes_database;
 
 -- Create quotes table to store core quote information
 CREATE TABLE IF NOT EXISTS quotes (
