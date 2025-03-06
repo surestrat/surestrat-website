@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Personal Section Schema
-const personalSchema = z.object({
+export const personalSchema = z.object({
 	firstName: z.string().min(2, "First name must be at least 2 characters"),
 	lastName: z.string().min(1, "Last name is required"),
 	idNumber: z.string().regex(/^\d{13}$/, "ID number must be 13 digits"),
@@ -18,19 +18,22 @@ const personalSchema = z.object({
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
-			return Number(val);
+			// Guard against very large numbers
+			const num = Number(val);
+			if (isNaN(num) || !isFinite(num) || num > 1000000000) return null;
+			return num;
 		}),
 });
 
 // Insurance Types Schema
-const insuranceTypesSchema = z.object({
+export const insuranceTypesSchema = z.object({
 	insuranceTypes: z
 		.array(z.enum(["vehicle", "home", "life", "business"]))
 		.min(1, "Select at least one insurance type"),
 });
 
 // Vehicle Section Schema
-const vehicleSchema = z.object({
+export const vehicleSchema = z.object({
 	vehicleCount: z.string().optional(),
 	vehicleType: z.string().optional(),
 	vehicleYear: z
@@ -38,7 +41,16 @@ const vehicleSchema = z.object({
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
-			return Number(val);
+			const num = Number(val);
+			// Year should be a reasonable 4-digit number
+			if (
+				isNaN(num) ||
+				num < 1900 ||
+				num > new Date().getFullYear() + 1 ||
+				!isFinite(num)
+			)
+				return null;
+			return num;
 		}),
 	vehicleMake: z.string().optional(),
 	vehicleModel: z.string().optional(),
@@ -46,27 +58,34 @@ const vehicleSchema = z.object({
 });
 
 // Property Section Schema
-const propertySchema = z.object({
+export const propertySchema = z.object({
 	propertyType: z.string().optional(),
 	propertyValue: z
 		.union([z.string(), z.number()])
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
-			return Number(val);
+			const num = Number(val);
+			// Property value should be reasonable
+			if (isNaN(num) || !isFinite(num) || num < 0 || num > 100000000)
+				return null;
+			return num;
 		}),
 	propertyAddress: z.string().optional(),
 	securityMeasures: z.string().optional(),
 });
 
 // Life Insurance Section Schema
-const lifeSchema = z.object({
+export const lifeSchema = z.object({
 	age: z
 		.union([z.string(), z.number()])
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
-			return Number(val);
+			const num = Number(val);
+			// Age should be a reasonable number
+			if (isNaN(num) || !isFinite(num) || num < 0 || num > 120) return null;
+			return num;
 		}),
 	smokingStatus: z.string().optional(),
 	coverageAmount: z.string().optional(),
@@ -74,7 +93,7 @@ const lifeSchema = z.object({
 });
 
 // Business Section Schema
-const businessSchema = z.object({
+export const businessSchema = z.object({
 	businessName: z.string().optional(),
 	businessType: z.string().optional(),
 	coverageTypes: z.string().optional(),
@@ -83,19 +102,22 @@ const businessSchema = z.object({
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
-			return Number(val);
+			const num = Number(val);
+			// Employee count should be reasonable
+			if (isNaN(num) || !isFinite(num) || num < 0 || num > 100000) return null;
+			return num;
 		}),
 });
 
 // Terms Agreement Schema
-const termsSchema = z.object({
+export const termsSchema = z.object({
 	termsAccepted: z.literal(true, {
 		errorMap: () => ({ message: "You must agree to the terms and conditions" }),
 	}),
 });
 
 // Complete Quote Form Schema with conditional validation
-const quoteFormSchema = z
+export const quoteFormSchema = z
 	.object({})
 	.merge(personalSchema)
 	.merge(insuranceTypesSchema)
@@ -141,7 +163,7 @@ const quoteFormSchema = z
 	);
 
 // API response schema
-const apiResponseSchema = z.object({
+export const apiResponseSchema = z.object({
 	success: z.boolean(),
 	message: z.string().optional(),
 	quoteId: z.number().optional(),
@@ -151,15 +173,15 @@ const apiResponseSchema = z.object({
 	code: z.number().optional(),
 });
 
-// Export all schemas
-export {
-	personalSchema,
-	insuranceTypesSchema,
-	vehicleSchema,
-	propertySchema,
-	lifeSchema,
-	businessSchema,
-	termsSchema,
-	apiResponseSchema,
-	quoteFormSchema,
-};
+// // Export all schemas
+// export {
+// 	personalSchema,
+// 	insuranceTypesSchema,
+// 	vehicleSchema,
+// 	propertySchema,
+// 	lifeSchema,
+// 	businessSchema,
+// 	termsSchema,
+// 	apiResponseSchema,
+// 	quoteFormSchema,
+// };

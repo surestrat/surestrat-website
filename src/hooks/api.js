@@ -17,9 +17,14 @@ export const handleQuoteSubmission = async (
 			const formattedErrors = validationResult.error.format();
 			logger.error("❌ Validation errors:", formattedErrors);
 
-			// Get the first error message to display to user
-			const firstError = validationResult.error.errors[0];
-			throw new Error(firstError?.message || "Form validation failed");
+			// Get all error messages
+			const errorMessages = validationResult.error.errors.map((err) => {
+				// Format the path for better readability
+				const fieldName = err.path.join(".").replace(/\.(\d+)/g, "[$1]");
+				return `${fieldName}: ${err.message}`;
+			});
+
+			throw new Error(errorMessages[0] || "Form validation failed");
 		}
 
 		setIsSubmitting(true);
@@ -36,77 +41,68 @@ export const handleQuoteSubmission = async (
 		let apiUrl = useLocalApi
 			? "/api/submit-quote.php"
 			: `${import.meta.env.VITE_API_URL}/api/submit-quote`;
+
 		logger.debug("🔗 Using API endpoint:", apiUrl);
 
-		const response = await fetch(apiUrl, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(validatedData),
-		});
-
-		logger.debug("📥 API response status:", response.status);
-
-		// First check if response is ok based on status code
-		if (!response.ok) {
-			// Try to get error message from response body
-			try {
-				const errorData = await response.json();
-				throw new Error(
-					errorData.error || `HTTP error! status: ${response.status}`
-				);
-			} catch (parseError) {
-				// If can't parse JSON from error response
-				throw new Error(`HTTP error! Status: ${response.status}`);
-			}
-		}
-
-		// Get the text response first to debug if needed
-		const responseText = await response.text();
-		logger.debug("📄 Raw API response:", responseText);
-
-		// Handle empty response
-		if (!responseText || responseText.trim() === "") {
-			throw new Error("Server returned empty response");
-		}
-
-		let result;
 		try {
-			// Try to parse as JSON
-			result = JSON.parse(responseText);
+			const response = await fetch(apiUrl, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(validatedData),
+			});
 
-			// Validate the response against our schema
-			const validatedResponse = apiResponseSchema.safeParse(result);
-			if (!validatedResponse.success) {
-				logger.error(
-					"❌ API response validation error:",
-					validatedResponse.error
-				);
-				throw new Error("Server returned unexpected response format");
+			logger.debug("📥 API response status:", response.status);
+
+			// Get the text response first for debugging
+			const responseText = await response.text();
+			logger.debug("📄 Raw API response:", responseText);
+
+			// Handle empty responses
+			if (!responseText || responseText.trim() === "") {
+				throw new Error("Server returned empty response");
 			}
 
-			result = validatedResponse.data;
+			let result;
+			try {
+				// Try to parse as JSON
+				result = JSON.parse(responseText);
 
-			// Double check success flag from API
-			if (!result.success) {
-				throw new Error(result.error || "Failed to submit quote");
+				// Validate the response format
+				const validatedResponse = apiResponseSchema.safeParse(result);
+				if (!validatedResponse.success) {
+					logger.error(
+						"❌ API response validation error:",
+						validatedResponse.error
+					);
+					throw new Error("Server returned unexpected response format");
+				}
+
+				result = validatedResponse.data;
+
+				if (!result.success) {
+					throw new Error(result.error || "Failed to submit quote");
+				}
+			} catch (parseError) {
+				logger.error("❌ JSON parse error:", parseError);
+				logger.error("❌ Invalid JSON response:", responseText);
+				throw new Error("Server returned invalid JSON response");
 			}
-		} catch (parseError) {
-			logger.error("❌ JSON parse error:", parseError);
-			logger.error("❌ Invalid JSON response:", responseText);
-			throw new Error("Server returned invalid JSON response");
+
+			logger.info("✅ Quote submitted successfully, ID:", result.quoteId);
+			setSubmitSuccess(true);
+			reset(); // Reset form on success
+
+			// After 3 seconds, reset the success state
+			setTimeout(() => {
+				setSubmitSuccess(false);
+				logger.debug("🔄 Reset submit success state");
+			}, 3000);
+		} catch (fetchError) {
+			logger.error("💔 API request failed:", fetchError);
+			throw new Error(`Network error: ${fetchError.message}`);
 		}
-
-		logger.info("✅ Quote submitted successfully, ID:", result.quoteId);
-		setSubmitSuccess(true);
-		reset(); // Reset form on success
-
-		// After 3 seconds, reset the success state
-		setTimeout(() => {
-			setSubmitSuccess(false);
-			logger.debug("🔄 Reset submit success state");
-		}, 3000);
 	} catch (error) {
 		logger.error("💔 Quote submission failed:", error);
 		setSubmitError(error.message || "An unexpected error occurred");
