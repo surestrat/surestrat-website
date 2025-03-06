@@ -25,7 +25,7 @@ if (!checkRateLimit($_SERVER['REMOTE_ADDR'])) {
 // Route API requests
 try {
     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    // $path = trim(str_replace('/api', '', $path), '/');
+    $path = trim(str_replace('/api', '', $path), '/');
 
     // Add a simple health check endpoint
     if ($path === 'health' || $path === 'ping') {

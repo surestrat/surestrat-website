@@ -40,8 +40,8 @@ export const handleQuoteSubmission = async (
 
 		// Fix the API URL - notice the double slash in your logs
 		let apiUrl = useLocalApi
-			? "/api/submit-quote.php"
-			: `${import.meta.env.VITE_API_URL}/api/submit-quote.php`; // Add .php and fix double slash
+			? "/api/submit-quote"
+			: `https://surestrat.co.za/api/submit-quote`; // Add .php and fix double slash
 
 		logger.debug("🔗 Using API endpoint:", apiUrl);
 
