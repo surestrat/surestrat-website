@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Personal Section Schema
-export const personalSchema = z.object({
+const personalSchema = z.object({
 	firstName: z.string().min(2, "First name must be at least 2 characters"),
 	lastName: z.string().min(1, "Last name is required"),
 	idNumber: z.string().regex(/^\d{13}$/, "ID number must be 13 digits"),
@@ -14,95 +14,118 @@ export const personalSchema = z.object({
 	employmentStatus: z.string().optional(),
 	occupation: z.string().optional(),
 	monthlyIncome: z
-		.number()
+		.union([z.string(), z.number()])
 		.optional()
-		.nullable()
-		.transform((val) => (val === "" ? null : Number(val))),
+		.transform((val) => {
+			if (val === "" || val === null || val === undefined) return null;
+			return Number(val);
+		}),
 });
 
 // Insurance Types Schema
-export const insuranceTypesSchema = z.object({
+const insuranceTypesSchema = z.object({
 	insuranceTypes: z
 		.array(z.enum(["vehicle", "home", "life", "business"]))
 		.min(1, "Select at least one insurance type"),
 });
 
 // Vehicle Section Schema
-export const vehicleSchema = z
-	.object({
-		vehicleCount: z.string().optional(),
-		vehicleType: z.string().optional(),
-		vehicleYear: z
-			.number()
-			.optional()
-			.nullable()
-			.transform((val) => (val === "" ? null : Number(val))),
-		vehicleMake: z.string().optional(),
-		vehicleModel: z.string().optional(),
-		vehicleUsage: z.string().optional(),
-	})
-	.optional();
+const vehicleSchema = z.object({
+	vehicleCount: z.string().optional(),
+	vehicleType: z.string().optional(),
+	vehicleYear: z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((val) => {
+			if (val === "" || val === null || val === undefined) return null;
+			return Number(val);
+		}),
+	vehicleMake: z.string().optional(),
+	vehicleModel: z.string().optional(),
+	vehicleUsage: z.string().optional(),
+});
 
 // Property Section Schema
-export const propertySchema = z
-	.object({
-		propertyType: z.string().optional(),
-		propertyValue: z
-			.number()
-			.optional()
-			.nullable()
-			.transform((val) => (val === "" ? null : Number(val))),
-		propertyAddress: z.string().optional(),
-		securityMeasures: z.string().optional(),
-	})
-	.optional();
+const propertySchema = z.object({
+	propertyType: z.string().optional(),
+	propertyValue: z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((val) => {
+			if (val === "" || val === null || val === undefined) return null;
+			return Number(val);
+		}),
+	propertyAddress: z.string().optional(),
+	securityMeasures: z.string().optional(),
+});
 
 // Life Insurance Section Schema
-export const lifeSchema = z
-	.object({
-		age: z
-			.number()
-			.optional()
-			.nullable()
-			.transform((val) => (val === "" ? null : Number(val))),
-		smokingStatus: z.string().optional(),
-		coverageAmount: z.string().optional(),
-		existingConditions: z.string().optional(),
-	})
-	.optional();
+const lifeSchema = z.object({
+	age: z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((val) => {
+			if (val === "" || val === null || val === undefined) return null;
+			return Number(val);
+		}),
+	smokingStatus: z.string().optional(),
+	coverageAmount: z.string().optional(),
+	existingConditions: z.string().optional(),
+});
 
 // Business Section Schema
-export const businessSchema = z
-	.object({
-		businessName: z.string().optional(),
-		businessType: z.string().optional(),
-		coverageTypes: z.string().optional(),
-		employeeCount: z
-			.number()
-			.optional()
-			.nullable()
-			.transform((val) => (val === "" ? null : Number(val))),
-	})
-	.optional();
+const businessSchema = z.object({
+	businessName: z.string().optional(),
+	businessType: z.string().optional(),
+	coverageTypes: z.string().optional(),
+	employeeCount: z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((val) => {
+			if (val === "" || val === null || val === undefined) return null;
+			return Number(val);
+		}),
+});
 
 // Terms Agreement Schema
-export const termsSchema = z.object({
-	termsAgreed: z.literal(true, {
+const termsSchema = z.object({
+	termsAccepted: z.literal(true, {
 		errorMap: () => ({ message: "You must agree to the terms and conditions" }),
 	}),
 });
 
 // Complete Quote Form Schema with conditional validation
-export const quoteFormSchema = z
+const quoteFormSchema = z
 	.object({})
 	.merge(personalSchema)
 	.merge(insuranceTypesSchema)
 	.merge(
 		z.object({
-			// Conditionally required sections based on insurance types
+			termsAccepted: termsSchema.shape.termsAccepted,
+			// Add all the optional fields from other schemas directly
+			vehicleCount: vehicleSchema.shape.vehicleCount,
+			vehicleType: vehicleSchema.shape.vehicleType,
+			vehicleYear: vehicleSchema.shape.vehicleYear,
+			vehicleMake: vehicleSchema.shape.vehicleMake,
+			vehicleModel: vehicleSchema.shape.vehicleModel,
+			vehicleUsage: vehicleSchema.shape.vehicleUsage,
+
+			propertyType: propertySchema.shape.propertyType,
+			propertyValue: propertySchema.shape.propertyValue,
+			propertyAddress: propertySchema.shape.propertyAddress,
+			securityMeasures: propertySchema.shape.securityMeasures,
+
+			age: lifeSchema.shape.age,
+			smokingStatus: lifeSchema.shape.smokingStatus,
+			coverageAmount: lifeSchema.shape.coverageAmount,
+			existingConditions: lifeSchema.shape.existingConditions,
+
+			businessName: businessSchema.shape.businessName,
+			businessType: businessSchema.shape.businessType,
+			coverageTypes: businessSchema.shape.coverageTypes,
+			employeeCount: businessSchema.shape.employeeCount,
 		})
 	)
-	.merge(termsSchema)
 	.refine(
 		(data) => {
 			// If vehicle insurance is selected, validate vehicle fields
@@ -118,12 +141,25 @@ export const quoteFormSchema = z
 	);
 
 // API response schema
-export const apiResponseSchema = z.object({
+const apiResponseSchema = z.object({
 	success: z.boolean(),
 	message: z.string().optional(),
 	quoteId: z.number().optional(),
+	reference: z.string().optional(),
 	timestamp: z.string().optional(),
 	error: z.string().optional(),
+	code: z.number().optional(),
 });
 
-export default quoteFormSchema;
+// Export all schemas
+export {
+	personalSchema,
+	insuranceTypesSchema,
+	vehicleSchema,
+	propertySchema,
+	lifeSchema,
+	businessSchema,
+	termsSchema,
+	apiResponseSchema,
+	quoteFormSchema,
+};

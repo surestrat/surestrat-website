@@ -1,31 +1,5 @@
 import { logger } from "@utils/logger";
-import {
-	personalSchema,
-	insuranceTypesSchema,
-	vehicleSchema,
-	propertySchema,
-	lifeSchema,
-	businessSchema,
-	termsSchema,
-	apiResponseSchema,
-} from "@schemas/quoteFormSchema";
-import { z } from "zod";
-
-// Combine all schemas
-const quoteFormSchema = z
-	.object({})
-	.merge(personalSchema)
-	.merge(insuranceTypesSchema)
-	.merge(
-		z.object({
-			termsAccepted: termsSchema.shape.termsAccepted,
-			// All other fields are optional and validated conditionally
-			...vehicleSchema.partial().shape,
-			...propertySchema.partial().shape,
-			...lifeSchema.partial().shape,
-			...businessSchema.partial().shape,
-		})
-	);
+import { quoteFormSchema, apiResponseSchema } from "@schemas/quoteFormSchema";
 
 export const handleQuoteSubmission = async (
 	data,
