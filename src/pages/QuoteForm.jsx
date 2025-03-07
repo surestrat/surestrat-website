@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
-import { handleQuoteSubmission } from "@hooks/api";
-import { logger } from "@utils/logger";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { quoteFormSchema } from "@schemas/quoteFormSchema";
+import { handleQuoteSubmission } from "@utils/api";
+import { logger } from "@utils/logger";
+import { useFormWithValidation } from "@hooks/useFormWithValidation";
 
 // UI Components
 import PillHeader from "@components/ui/PillHeader";
@@ -42,16 +41,12 @@ const QuoteForm = () => {
 
 	const {
 		register,
-		handleSubmit,
 		watch,
 		reset,
 		formState: { errors },
-	} = useForm({
-		defaultValues: {
-			insuranceTypes: [],
-		},
-		mode: "onBlur",
-		resolver: zodResolver(quoteFormSchema), // Add Zod resolver
+		handleSubmitSafe,
+	} = useFormWithValidation(quoteFormSchema, {
+		insuranceTypes: [],
 	});
 
 	// Log form errors whenever they change
@@ -87,7 +82,7 @@ const QuoteForm = () => {
 	};
 
 	// Watch insurance types to log changes
-	const insuranceTypes = watch("insuranceTypes");
+	const insuranceTypes = watch("insuranceTypes") || [];
 	useEffect(() => {
 		logger.debug("🔍 Selected insurance types changed:", insuranceTypes);
 	}, [insuranceTypes]);
@@ -124,7 +119,7 @@ const QuoteForm = () => {
 					variants={formVariants}
 					className="max-w-4xl p-8 mx-auto mt-16 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl ring-1 ring-gray-200/50"
 				>
-					<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+					<form onSubmit={handleSubmitSafe(onSubmit)} className="space-y-6">
 						<AnimatePresence mode="sync">
 							<motion.div
 								initial={{ opacity: 0 }}
@@ -134,7 +129,8 @@ const QuoteForm = () => {
 								{/* Personal Information Section */}
 								<PersonalSection
 									openSections={openSections}
-									toggleSection={toggleSection}
+									isOpen={openSections.personal}
+									toggleSection={() => toggleSection("personal")}
 									register={register}
 									errors={errors}
 								/>
@@ -142,58 +138,57 @@ const QuoteForm = () => {
 								{/* Insurance Type Selection */}
 								<InsuranceTypeSection
 									openSections={openSections}
-									toggleSection={toggleSection}
+									isOpen={openSections.insurance}
+									toggleSection={() => toggleSection("insurance")}
 									register={register}
 									errors={errors}
+									insuranceTypes={insuranceTypes}
 								/>
 
 								{/* Conditional Sections */}
-								{watch("insuranceTypes")?.includes("vehicle") && (
+								{insuranceTypes?.includes("vehicle") && (
 									<VehicleSection
 										openSections={openSections}
-										toggleSection={toggleSection}
+										isOpen={openSections.vehicle}
+										toggleSection={() => toggleSection("vehicle")}
 										register={register}
 										errors={errors}
 										watch={watch}
 									/>
 								)}
 
-								{watch("insuranceTypes")?.includes("home") && (
+								{insuranceTypes?.includes("home") && (
 									<PropertySection
 										openSections={openSections}
-										toggleSection={toggleSection}
+										isOpen={openSections.property}
+										toggleSection={() => toggleSection("property")}
 										register={register}
 										errors={errors}
 									/>
 								)}
 
-								{watch("insuranceTypes")?.includes("life") && (
+								{insuranceTypes?.includes("life") && (
 									<LifeSection
 										openSections={openSections}
-										toggleSection={toggleSection}
+										isOpen={openSections.lifestyle}
+										toggleSection={() => toggleSection("lifestyle")}
 										register={register}
 										errors={errors}
 									/>
 								)}
 
-								{watch("insuranceTypes")?.includes("business") && (
+								{insuranceTypes?.includes("business") && (
 									<BusinessSection
 										openSections={openSections}
-										toggleSection={toggleSection}
+										isOpen={openSections.business}
+										toggleSection={() => toggleSection("business")}
 										register={register}
 										errors={errors}
 									/>
 								)}
 
-								{/* Terms and Conditions using the TermsSection component */}
+								{/* Terms and Conditions */}
 								<TermsSection register={register} errors={errors} />
-
-								{/* Submit Button */}
-								<SubmitButton
-									isSubmitting={isSubmitting}
-									submitSuccess={submitSuccess}
-									onClick={() => logger.debug("🖱️ Submit button clicked")}
-								/>
 
 								{/* Error Message */}
 								{submitError && (
@@ -201,6 +196,23 @@ const QuoteForm = () => {
 										<p>{submitError}</p>
 									</div>
 								)}
+
+								{/* Success Message */}
+								{submitSuccess && (
+									<div className="p-4 mt-4 text-center text-white rounded-lg bg-green-500/90">
+										<p>
+											Your quote request has been submitted successfully! We'll
+											be in touch soon.
+										</p>
+									</div>
+								)}
+
+								{/* Submit Button */}
+								<SubmitButton
+									isSubmitting={isSubmitting}
+									submitSuccess={submitSuccess}
+									onClick={() => logger.debug("🖱️ Submit button clicked")}
+								/>
 							</motion.div>
 						</AnimatePresence>
 					</form>

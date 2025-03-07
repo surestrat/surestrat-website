@@ -14,14 +14,12 @@ export const personalSchema = z.object({
 	employmentStatus: z.string().optional(),
 	occupation: z.string().optional(),
 	monthlyIncome: z
-		.union([z.string(), z.number()])
+		.union([z.string(), z.number(), z.null()])
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
-			// Guard against very large numbers
 			const num = Number(val);
-			if (isNaN(num) || !isFinite(num) || num > 1000000000) return null;
-			return num;
+			return isNaN(num) ? null : num;
 		}),
 });
 
@@ -61,15 +59,12 @@ export const vehicleSchema = z.object({
 export const propertySchema = z.object({
 	propertyType: z.string().optional(),
 	propertyValue: z
-		.union([z.string(), z.number()])
+		.union([z.string(), z.number(), z.null()])
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
 			const num = Number(val);
-			// Property value should be reasonable
-			if (isNaN(num) || !isFinite(num) || num < 0 || num > 100000000)
-				return null;
-			return num;
+			return isNaN(num) ? null : num;
 		}),
 	propertyAddress: z.string().optional(),
 	securityMeasures: z.string().optional(),
@@ -78,14 +73,12 @@ export const propertySchema = z.object({
 // Life Insurance Section Schema
 export const lifeSchema = z.object({
 	age: z
-		.union([z.string(), z.number()])
+		.union([z.string(), z.number(), z.null()])
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
 			const num = Number(val);
-			// Age should be a reasonable number
-			if (isNaN(num) || !isFinite(num) || num < 0 || num > 120) return null;
-			return num;
+			return isNaN(num) ? null : num;
 		}),
 	smokingStatus: z.string().optional(),
 	coverageAmount: z.string().optional(),
@@ -98,14 +91,12 @@ export const businessSchema = z.object({
 	businessType: z.string().optional(),
 	coverageTypes: z.string().optional(),
 	employeeCount: z
-		.union([z.string(), z.number()])
+		.union([z.string(), z.number(), z.null()])
 		.optional()
 		.transform((val) => {
 			if (val === "" || val === null || val === undefined) return null;
 			const num = Number(val);
-			// Employee count should be reasonable
-			if (isNaN(num) || !isFinite(num) || num < 0 || num > 100000) return null;
-			return num;
+			return isNaN(num) ? null : num;
 		}),
 });
 
@@ -148,19 +139,33 @@ export const quoteFormSchema = z
 			employeeCount: businessSchema.shape.employeeCount,
 		})
 	)
+	// Only validate vehicle fields if vehicle insurance is selected
 	.refine(
 		(data) => {
-			// If vehicle insurance is selected, validate vehicle fields
 			if (data.insuranceTypes.includes("vehicle")) {
-				return data.vehicleType != null;
+				return !!data.vehicleType;
 			}
 			return true;
 		},
 		{
-			message: "Vehicle information is required for vehicle insurance",
+			message: "Vehicle type is required when vehicle insurance is selected",
 			path: ["vehicleType"],
 		}
+	)
+	// Only validate property fields if home insurance is selected
+	.refine(
+		(data) => {
+			if (data.insuranceTypes.includes("home")) {
+				return !!data.propertyType;
+			}
+			return true;
+		},
+		{
+			message: "Property type is required when home insurance is selected",
+			path: ["propertyType"],
+		}
 	);
+// Add more refinements for other insurance types if needed
 
 // API response schema
 export const apiResponseSchema = z.object({

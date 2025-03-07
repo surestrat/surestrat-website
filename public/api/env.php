@@ -1,24 +1,36 @@
 <?php
-// Load environment variables from .user.ini if available
-$env_file = $_SERVER['DOCUMENT_ROOT'] . '/.user.ini';
-$loaded_env = false;
+/**
+ * Environment variables loader
+ * 
+ * IMPORTANT: In production, move this file and secrets.php outside the web root!
+ * Example location: /home/username/config/secrets.php (one level above document root)
+ */
 
-if (file_exists($env_file)) {
-    $env_vars = parse_ini_file($env_file);
-    if ($env_vars !== false) {
-        foreach ($env_vars as $key => $value) {
-            putenv("$key=$value");
-        }
-        $loaded_env = true;
-    }
-}
+// Path to secrets file outside web root (for production)
+$secretsPath = dirname($_SERVER['DOCUMENT_ROOT']) . '/config/secrets.php';
 
-// Fallback to credentials.php if .user.ini couldn't be loaded
-if (!$loaded_env) {
-    // Path assuming API is in public_html/api/ and variables is in cPanel root
-    $fallback_file = $_SERVER['DOCUMENT_ROOT'] . 'credentials.php';
-    if (file_exists($fallback_file)) {
-        include_once($fallback_file);
+// For development, try local secrets file
+$devSecretsPath = __DIR__ . '/../../secrets.php';
+
+// First try production path (outside web root)
+if (file_exists($secretsPath)) {
+    require_once $secretsPath;
+} 
+// Then try development path (for local development)
+elseif (file_exists($devSecretsPath)) {
+    require_once $devSecretsPath;
+} 
+// Finally, try to use the .env approach
+else {
+    // Log that we're using fallback method
+    file_put_contents(__DIR__ . '/logs/env_warning.log', 
+        date('[Y-m-d H:i:s]') . " Warning: Using fallback method for environment variables\n", 
+        FILE_APPEND);
+    
+    // Try to load from .user.ini in cPanel
+    if (function_exists('getenv')) {
+        // Environment variables should already be loaded by the system
+        // Or we can try to parse .env file here if needed
     }
 }
 
@@ -30,6 +42,13 @@ if (!$loaded_env) {
  */
 function getenv_default($key, $default = null) {
     $value = getenv($key);
-    return $value !== false ? $value : $default;
+    if ($value === false) {
+        // If not found in environment, check if defined as constant
+        if (defined($key)) {
+            return constant($key);
+        }
+        return $default;
+    }
+    return $value;
 }
 ?>
