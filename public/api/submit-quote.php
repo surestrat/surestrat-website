@@ -5,10 +5,13 @@ ini_set('display_startup_errors', 0); // Set to 0 in production
 error_reporting(E_ALL);
 
 // Set headers to allow cross-origin requests and specify content type
+header('Content-Type: application/json; charset=UTF-8');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Access-Control-Allow-Origin: *'); // Change to specific domain in production
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Request-Time');
-header('Content-Type: application/json');
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

@@ -1,6 +1,24 @@
 <?php
+// Add these headers to the beginning of config.php
+// Set appropriate headers for API responses
+header('Content-Type: application/json');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
 // Load environment variables - this file should be protected outside the web root
 require_once 'env.php';
+
+/**
+ * Helper function to get environment variables with fallback values
+ * @param string $name Environment variable name
+ * @param mixed $default Default value if not set
+ * @return mixed Environment value or default
+ */
+function getenv_default($name, $default = null) {
+    $value = getenv($name);
+    return $value !== false ? $value : $default;
+}
 
 /**
  * Get PostgreSQL PDO connection

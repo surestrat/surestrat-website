@@ -51,4 +51,21 @@ function getenv_default($key, $default = null) {
     }
     return $value;
 }
+
+// Environment configuration for the API
+// This file should ideally be placed outside the web root for security
+
+// Database configuration
+putenv('DB_HOST=localhost');
+putenv('DB_PORT=5432');
+putenv('DB_NAME=surestr2_quotes_database');
+putenv('DB_USER=surestr2_web_user');  // Use a restricted user for web access
+putenv('DB_PASSWORD=your_secure_password_here');  // Change this in production!
+
+// Application settings
+putenv('APP_ENV=production');  // 'development' or 'production'
+putenv('LOG_DIR=/home/surestr2/logs');  // Path to logs directory outside web root
+
+// Security settings
+putenv('MAX_REQUESTS_PER_MINUTE=10');  // Rate limiting
 ?>

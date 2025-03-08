@@ -1,6 +1,7 @@
 import axios from "axios";
 import { logger } from "@utils/logger";
 import { quoteFormSchema } from "@schemas/quoteFormSchema";
+import { createPostConfig } from "@constants/fetchConfig";
 
 // Create axios instance with default configurations
 const api = axios.create({
@@ -209,7 +210,7 @@ export const handleQuoteSubmission = async (
 		}
 
 		// For production mode
-		const apiUrl = `/submit-quote.php`;
+		const apiUrl = `/api/submit-quote.php`;
 
 		logger.debug("🔗 Using API endpoint:", apiUrl);
 
@@ -224,15 +225,46 @@ export const handleQuoteSubmission = async (
 
 			// Make API request with timeout race
 			const response = await Promise.race([
-				api.post(apiUrl, validatedData),
+				fetch(apiUrl, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"X-Requested-With": "XMLHttpRequest",
+						Accept: "application/json",
+					},
+					body: JSON.stringify(validatedData),
+				}),
 				timeoutPromise,
 			]);
 
-			// Check if we got a valid response or PHP source code
-			const responseData = response.data;
+			// Handle HTTP status errors
+			if (!response.ok) {
+				const errorText = await response.text();
+				let errorMessage = "Failed to submit quote";
 
-			if (typeof responseData === "string" && !isValidResponse(responseData)) {
-				throw new Error("Invalid server response. Please contact support.");
+				try {
+					// Try to parse as JSON
+					const errorData = JSON.parse(errorText);
+					errorMessage = errorData.error || `Server error: ${response.status}`;
+				} catch (e) {
+					// If not valid JSON, check if it's PHP code
+					if (errorText.includes("<?php")) {
+						errorMessage =
+							"Server configuration error. Please try again later.";
+					} else {
+						errorMessage = `Server error: ${response.status}`;
+					}
+				}
+
+				throw new Error(errorMessage);
+			}
+
+			// Parse the JSON response
+			let responseData;
+			try {
+				responseData = await response.json();
+			} catch (e) {
+				throw new Error("Invalid response format from server");
 			}
 
 			logger.debug("📥 API response:", responseData);
@@ -255,44 +287,20 @@ export const handleQuoteSubmission = async (
 			setTimeout(() => {
 				setSubmitSuccess(false);
 			}, 5000);
-		} catch (axiosError) {
-			logger.error("💔 API request failed:", axiosError);
+
+			return responseData;
+		} catch (error) {
+			logger.error("💔 API request failed:", error);
 
 			let errorMessage = "Failed to submit quote";
 
-			// Extract meaningful error messages from axios error
-			if (axiosError.response) {
-				// If we got PHP source code instead of JSON
-				if (
-					typeof axiosError.response.data === "string" &&
-					axiosError.response.data.includes("<?php")
-				) {
-					errorMessage = "Server configuration error. Please try again later.";
-				} else if (axiosError.response.status === 429) {
-					errorMessage =
-						"Too many requests. Please try again in a few minutes.";
-				} else if (axiosError.response.status >= 500) {
-					errorMessage =
-						"Server error. Our team has been notified. Please try again later.";
-				} else {
-					// Server responded with error
-					const serverError =
-						axiosError.response.data?.error ||
-						`Server error: ${axiosError.response.status}`;
-					errorMessage = serverError;
-				}
-			} else if (axiosError.request) {
-				// No response received
-				if (axiosError.code === "ECONNABORTED") {
-					errorMessage = "Request timed out. Please try again later.";
-				} else {
-					errorMessage =
-						"No response received from server. Please check your internet connection.";
-				}
-			} else {
-				// Error setting up request
-				errorMessage =
-					axiosError.message || "Something went wrong with the request";
+			if (
+				error.name === "TypeError" &&
+				error.message.includes("Failed to fetch")
+			) {
+				errorMessage = "Network error. Please check your internet connection.";
+			} else if (error.message) {
+				errorMessage = error.message;
 			}
 
 			throw new Error(errorMessage);
@@ -305,10 +313,12 @@ export const handleQuoteSubmission = async (
 		setTimeout(() => {
 			setSubmitError(null);
 		}, 5000);
+
+		throw error;
 	} finally {
 		setIsSubmitting(false);
 		logger.debug("🏷️ Quote submission process completed");
 	}
 };
 
-export default api;
+export default { handleQuoteSubmission };

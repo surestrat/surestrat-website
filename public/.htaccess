@@ -1,108 +1,94 @@
-
-
 <IfModule mod_rewrite.c>
+    Options -MultiViews
     RewriteEngine On
     RewriteBase /
-    
-    # Force HTTPS
-    RewriteCond %{HTTPS} off
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-    
-    # API Requests
-    RewriteRule ^api/.* api/index.php [L]
-    
-    # SPA Routing
+
+    # Handle React Router Routes
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule . index.html [L]
+    RewriteRule ^ index.html [L]
+
+    # Allow direct access to submit-quote.php
+    RewriteRule ^api/submit-quote\.php$ api/submit-quote.php [L]
+
+    #Prevent direct access to any other .php files in api folder.
+    RewriteRule ^api/.*\.php$ - [F,L]
+
+    # Handle API requests
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_URI} ^/api/
+    RewriteRule ^api/(.*)$ api/$1 [L]
+
+    # If the file or directory doesn't exist, serve index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.html [QSA,L]
 </IfModule>
 
-# Security Headers
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    # Additional recommended security headers
-	    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://surestrat.co.za"
-    
-    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
-</IfModule>
-
-# PHP Settings
-<IfModule mod_php.c>
-    php_value upload_max_filesize 10M
-    php_value post_max_size 10M
-    php_value max_execution_time 300
-    php_value max_input_time 300
-    php_value memory_limit 128M
-    php_flag display_errors off
-    php_flag log_errors on
-</IfModule>
-
-# Caching
-<IfModule mod_expires.c>
-    ExpiresActive On
-    
-    # Images
-    ExpiresByType image/jpg "access plus 1 year"
-    ExpiresByType image/jpeg "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType image/svg+xml "access plus 1 year"
-    ExpiresByType image/webp "access plus 1 year"
-    ExpiresByType image/gif "access plus 1 year"
-    ExpiresByType image/ico "access plus 1 year"
-    ExpiresByType image/x-icon "access plus 1 year"
-    
-    # CSS, JavaScript, Fonts
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType text/javascript "access plus 1 month"
-    ExpiresByType font/woff "access plus 1 year"
-    ExpiresByType font/woff2 "access plus 1 year"
-    ExpiresByType application/font-woff "access plus 1 year"
-    ExpiresByType application/font-woff2 "access plus 1 year"
-    
-    # Default
-    ExpiresDefault "access plus 2 days"
-</IfModule>
-
-# Compression
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript text/javascript application/json application/xml image/svg+xml
-</IfModule>
-
-# Disable directory browsing
-Options -Indexes
-
-# Protect against script injection
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
-    RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]
-    RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2})
-    RewriteRule .* index.php [F,L]
-</IfModule>
-
-# Protect sensitive files
-<FilesMatch "(\.(bak|config|dist|inc|log|sql|sh|env|git|yml|md|svn|htaccess|htpasswd|ini)|~)$">
-    Order deny,allow
-    Deny from all
-    Satisfy All
-</FilesMatch>
-
+# Proper MIME type for all files
 <IfModule mod_mime.c>
-    # JavaScript
-    AddType application/javascript .js
-    AddType application/javascript .mjs
-    # CSS
-    AddType text/css .css
-    # Fonts
-    AddType font/woff .woff
-    AddType font/woff2 .woff2
-    # JSON
-    AddType application/json .json
-    # Source maps
-    AddType application/json .map
+  # JavaScript
+  AddType application/javascript .js
+  AddType application/javascript .mjs
+
+  # JSON
+  AddType application/json .json
+
+  # CSS
+  AddType text/css .css
+
+  # Images
+  AddType image/svg+xml .svg
+  AddType image/jpeg .jpg .jpeg
+  AddType image/png .png
+  AddType image/webp .webp
+
+  # Fonts
+  AddType font/ttf .ttf
+  AddType font/otf .otf
+  AddType font/woff .woff
+  AddType font/woff2 .woff2
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+  # Protect against clickjacking
+  Header always set X-Frame-Options "SAMEORIGIN"
+  
+  # Protect against MIME-sniffing
+  Header always set X-Content-Type-Options "nosniff"
+  
+  # Referrer policy
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  
+  # Disable FLoC tracking
+  Header always set Permissions-Policy "interest-cohort=()"
+  
+  # Content Security Policy to prevent unwanted scripts and popups
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.surestrat.co.za; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'"
+</IfModule>
+
+# Disable ETags as they are most likely misconfigured and
+# don't add much value with Expires headers in place
+<IfModule mod_headers.c>
+  Header unset ETag
+</IfModule>
+FileETag None
+
+# Enable gzip compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/json application/javascript text/xml application/xml text/javascript
+</IfModule>
+
+# Leverage browser caching
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType application/x-javascript "access plus 1 month"
 </IfModule>

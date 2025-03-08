@@ -42,7 +42,22 @@ export default defineConfig({
 	server: {
 		port: 5173,
 		open: true,
-		// Use local simulation instead of proxy for development
-		// Remove proxy config to use local simulation mode
+		headers: {
+			"X-Frame-Options": "SAMEORIGIN",
+			"X-Content-Type-Options": "nosniff",
+			"Referrer-Policy": "strict-origin-when-cross-origin",
+			"Permissions-Policy": "interest-cohort=()",
+		},
+	},
+
+	// Ensure proper MIME types are set
+	preview: {
+		port: 4173,
+		headers: {
+			"X-Frame-Options": "SAMEORIGIN",
+			"X-Content-Type-Options": "nosniff",
+			"Referrer-Policy": "strict-origin-when-cross-origin",
+			"Permissions-Policy": "interest-cohort=()",
+		},
 	},
 });
