@@ -10,12 +10,26 @@ const api = axios.create({
 	timeout: 30000, // 30 seconds
 });
 
-// Add a request interceptor for logging
+// Add a request interceptor for logging and validation
 api.interceptors.request.use(
 	(config) => {
+		// Log the request details
 		logger.debug(
 			`🚀 Making ${config.method.toUpperCase()} request to: ${config.url}`
 		);
+
+		// Check for data size limits to prevent oversized payloads
+		if (config.data && JSON.stringify(config.data).length > 1000000) {
+			// ~1MB limit
+			logger.error("❌ Request payload too large");
+			throw new Error(
+				"Request payload too large. Please reduce the size of your submission."
+			);
+		}
+
+		// Add timestamp to the request for tracking
+		config.headers["X-Request-Time"] = new Date().toISOString();
+
 		return config;
 	},
 	(error) => {
@@ -144,6 +158,13 @@ export const handleQuoteSubmission = async (
 		// Use validated data
 		const validatedData = validationResult.data;
 
+		// Check for network connection before attempting submission
+		if (!navigator.onLine) {
+			throw new Error(
+				"You appear to be offline. Please check your internet connection and try again."
+			);
+		}
+
 		// For development mode, we'll simulate a successful API response
 		const isLocalhost =
 			window.location.hostname === "localhost" ||
@@ -188,12 +209,24 @@ export const handleQuoteSubmission = async (
 		}
 
 		// For production mode
-		const apiUrl = "https://surestrat.co.za/api/submit-quote.php";
+		const apiUrl = `/submit-quote.php`;
+
 		logger.debug("🔗 Using API endpoint:", apiUrl);
 
 		try {
-			// Make API request
-			const response = await api.post(apiUrl, validatedData);
+			// Add timeout handling with a Promise race
+			const timeoutPromise = new Promise((_, reject) => {
+				setTimeout(
+					() => reject(new Error("Request timed out. Please try again later.")),
+					30000
+				);
+			});
+
+			// Make API request with timeout race
+			const response = await Promise.race([
+				api.post(apiUrl, validatedData),
+				timeoutPromise,
+			]);
 
 			// Check if we got a valid response or PHP source code
 			const responseData = response.data;
@@ -235,6 +268,12 @@ export const handleQuoteSubmission = async (
 					axiosError.response.data.includes("<?php")
 				) {
 					errorMessage = "Server configuration error. Please try again later.";
+				} else if (axiosError.response.status === 429) {
+					errorMessage =
+						"Too many requests. Please try again in a few minutes.";
+				} else if (axiosError.response.status >= 500) {
+					errorMessage =
+						"Server error. Our team has been notified. Please try again later.";
 				} else {
 					// Server responded with error
 					const serverError =
@@ -244,8 +283,12 @@ export const handleQuoteSubmission = async (
 				}
 			} else if (axiosError.request) {
 				// No response received
-				errorMessage =
-					"No response received from server. Please check your internet connection.";
+				if (axiosError.code === "ECONNABORTED") {
+					errorMessage = "Request timed out. Please try again later.";
+				} else {
+					errorMessage =
+						"No response received from server. Please check your internet connection.";
+				}
 			} else {
 				// Error setting up request
 				errorMessage =

@@ -1,30 +1,16 @@
-import { Heart } from "lucide-react";
+import { Heart, Cigarette, Coins, Stethoscope } from "lucide-react";
 import SectionHeader from "../SectionHeader";
 import FormSection from "../FormSection";
 import { InputField, SelectField } from "../FormField";
+import {
+	smokingOptions,
+	coverageOptions,
+	healthConditionOptions,
+} from "@constants/formOptions";
 
 const LifeSection = ({ openSections, toggleSection, register, errors }) => {
-	const smokingOptions = [
-		{ value: "non-smoker", label: "Non-Smoker" },
-		{ value: "smoker", label: "Smoker" },
-	];
-
-	const coverageOptions = [
-		{ value: "100000", label: "R100,000" },
-		{ value: "250000", label: "R250,000" },
-		{ value: "500000", label: "R500,000" },
-		{ value: "1000000", label: "R1,000,000+" },
-	];
-
-	const conditionOptions = [
-		{ value: "none", label: "None" },
-		{ value: "diabetes", label: "Diabetes" },
-		{ value: "hypertension", label: "Hypertension" },
-		{ value: "other", label: "Other" },
-	];
-
 	return (
-		<div>
+		<div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
 			<SectionHeader
 				title="Life Insurance Details"
 				section="lifestyle"
@@ -39,17 +25,20 @@ const LifeSection = ({ openSections, toggleSection, register, errors }) => {
 						name="age"
 						placeholder="Age"
 						type="number"
+						icon={Heart}
 						validation={{
 							min: {
-								value: 1,
-								message: "Age must be at least 1",
+								value: 18,
+								message: "Age must be at least 18 for life insurance",
 							},
 							max: {
 								value: 120,
 								message: "Age cannot exceed 120",
 							},
 							valueAsNumber: true,
+							required: "Age is required for life insurance",
 						}}
+						required={true}
 						errors={errors}
 					/>
 					<SelectField
@@ -57,6 +46,8 @@ const LifeSection = ({ openSections, toggleSection, register, errors }) => {
 						name="smokingStatus"
 						placeholder="Smoking Status"
 						options={smokingOptions}
+						icon={Cigarette}
+						required={true}
 						errors={errors}
 					/>
 					<SelectField
@@ -64,15 +55,25 @@ const LifeSection = ({ openSections, toggleSection, register, errors }) => {
 						name="coverageAmount"
 						placeholder="Coverage Amount"
 						options={coverageOptions}
+						icon={Coins}
+						required={true}
 						errors={errors}
 					/>
 					<SelectField
 						register={register}
 						name="existingConditions"
 						placeholder="Existing Health Conditions"
-						options={conditionOptions}
+						options={healthConditionOptions}
+						icon={Stethoscope}
+						required={true}
 						errors={errors}
 					/>
+				</div>
+				<div className="mt-4 text-xs text-gray-500">
+					<p>
+						* Health information is used solely for quote estimation purposes.
+						Full underwriting may be required.
+					</p>
 				</div>
 			</FormSection>
 		</div>

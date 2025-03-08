@@ -1,25 +1,12 @@
-import { Home } from "lucide-react";
+import { Home, MapPin, DollarSign, Shield } from "lucide-react";
 import SectionHeader from "../SectionHeader";
 import FormSection from "../FormSection";
 import { InputField, SelectField } from "../FormField";
+import { propertyTypeOptions, securityOptions } from "@constants/formOptions";
 
 const PropertySection = ({ openSections, toggleSection, register, errors }) => {
-	const propertyTypeOptions = [
-		{ value: "house", label: "House" },
-		{ value: "apartment", label: "Apartment" },
-		{ value: "townhouse", label: "Townhouse" },
-		{ value: "estate", label: "Estate" },
-	];
-
-	const securityOptions = [
-		{ value: "alarm", label: "Alarm System" },
-		{ value: "electric", label: "Electric Fence" },
-		{ value: "guards", label: "Security Guards" },
-		{ value: "multiple", label: "Multiple Measures" },
-	];
-
 	return (
-		<div>
+		<div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
 			<SectionHeader
 				title="Property Details"
 				section="property"
@@ -34,6 +21,7 @@ const PropertySection = ({ openSections, toggleSection, register, errors }) => {
 						name="propertyType"
 						placeholder="Property Type"
 						options={propertyTypeOptions}
+						icon={Home}
 						required={true}
 						errors={errors}
 					/>
@@ -42,6 +30,7 @@ const PropertySection = ({ openSections, toggleSection, register, errors }) => {
 						name="propertyValue"
 						placeholder="Estimated Property Value"
 						type="number"
+						icon={DollarSign}
 						validation={{
 							min: {
 								value: 1,
@@ -59,6 +48,7 @@ const PropertySection = ({ openSections, toggleSection, register, errors }) => {
 						register={register}
 						name="propertyAddress"
 						placeholder="Property Address"
+						icon={MapPin}
 						errors={errors}
 					/>
 					<SelectField
@@ -66,8 +56,15 @@ const PropertySection = ({ openSections, toggleSection, register, errors }) => {
 						name="securityMeasures"
 						placeholder="Security Measures"
 						options={securityOptions}
+						icon={Shield}
 						errors={errors}
 					/>
+				</div>
+				<div className="mt-4 text-xs text-gray-500">
+					<p>
+						* Property value is used for estimation purposes only. A formal
+						valuation may be required for final insurance coverage.
+					</p>
 				</div>
 			</FormSection>
 		</div>

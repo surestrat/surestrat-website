@@ -1,31 +1,37 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
-const sectionVariants = {
-  hidden: { opacity: 0, height: 0 },
-  visible: {
-    opacity: 1,
-    height: "auto",
-    transition: {
-      duration: 0.3,
-      ease: "easeInOut",
-    },
-  },
-};
+const FormSection = ({ children, isOpen }) => {
+	if (!isOpen) return null;
 
-const FormSection = ({ isOpen, children, className = "" }) => {
-  if (!isOpen) return null;
-  
-  return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      exit="hidden"
-      variants={sectionVariants}
-      className={`p-4 ${className}`}
-    >
-      {children}
-    </motion.div>
-  );
+	return (
+		<AnimatePresence>
+			{isOpen && (
+				<motion.div
+					initial={{ opacity: 0, height: 0 }}
+					animate={{
+						opacity: 1,
+						height: "auto",
+						transition: {
+							opacity: { duration: 0.2 },
+							height: { duration: 0.3 },
+						},
+					}}
+					exit={{
+						opacity: 0,
+						height: 0,
+						transition: {
+							opacity: { duration: 0.2 },
+							height: { duration: 0.3 },
+						},
+					}}
+					transition={{ duration: 0.3 }}
+					className="overflow-hidden"
+				>
+					<div className="py-2 space-y-4">{children}</div>
+				</motion.div>
+			)}
+		</AnimatePresence>
+	);
 };
 
 export default FormSection;

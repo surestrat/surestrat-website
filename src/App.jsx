@@ -12,6 +12,7 @@ import {
 import { Suspense, useEffect } from "react";
 import ErrorBoundary from "@components/ErrorBoundary";
 import ToastProvider from "./components/providers/ToastProvider";
+import { ErrorProvider } from "@context/ErrorContext";
 
 // Route logger component
 const RouteLogger = () => {
@@ -32,53 +33,57 @@ function App() {
 
 	return (
 		<ErrorBoundary>
-			<Suspense fallback={<div>Loading...</div>}>
-				<Router>
-					<RouteLogger />
-					<ToastProvider />
-					{/* Toast notifications */}
-					<Toaster
-						position="top-right"
-						toastOptions={{
-							duration: 5000,
-							style: {
-								background: "#363636",
-								color: "#fff",
-							},
-							success: {
-								duration: 3000,
-								theme: {
-									primary: "#4aed88",
+			<ErrorProvider>
+				<Suspense fallback={<div>Loading...</div>}>
+					<Router>
+						<RouteLogger />
+						<ToastProvider />
+						{/* Toast notifications */}
+						<Toaster
+							position="top-right"
+							toastOptions={{
+								duration: 5000,
+								style: {
+									background: "#363636",
+									color: "#fff",
 								},
-							},
-							error: {
-								duration: 4000,
-								theme: {
-									primary: "#ff4b4b",
+								success: {
+									duration: 3000,
+									theme: {
+										primary: "#4aed88",
+									},
 								},
-							},
-						}}
-					/>
-
-					<Routes>
-						<Route path="/" element={<LandingPage />} />
-						<Route path="/claims-portal" element={<ClaimsPortalPage />} />
-						<Route path="/get-quote" element={<QuoteForm />} />
-						<Route path="/contact" element={<div>Contact</div>} />
-						<Route
-							path="*"
-							element={
-								<div className="flex items-center justify-center min-h-screen">
-									<div className="text-center">
-										<h1 className="text-4xl font-bold text-gray-800">404</h1>
-										<p className="mt-2 text-lg text-gray-600">Page not found</p>
-									</div>
-								</div>
-							}
+								error: {
+									duration: 4000,
+									theme: {
+										primary: "#ff4b4b",
+									},
+								},
+							}}
 						/>
-					</Routes>
-				</Router>
-			</Suspense>
+
+						<Routes>
+							<Route path="/" element={<LandingPage />} />
+							<Route path="/claims-portal" element={<ClaimsPortalPage />} />
+							<Route path="/get-quote" element={<QuoteForm />} />
+							<Route path="/contact" element={<div>Contact</div>} />
+							<Route
+								path="*"
+								element={
+									<div className="flex items-center justify-center min-h-screen">
+										<div className="text-center">
+											<h1 className="text-4xl font-bold text-gray-800">404</h1>
+											<p className="mt-2 text-lg text-gray-600">
+												Page not found
+											</p>
+										</div>
+									</div>
+								}
+							/>
+						</Routes>
+					</Router>
+				</Suspense>
+			</ErrorProvider>
 		</ErrorBoundary>
 	);
 }

@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 // Set headers to allow cross-origin requests and specify content type
 header('Access-Control-Allow-Origin: *'); // Change to specific domain in production
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, X-Request-Time');
 header('Content-Type: application/json');
 
 // Handle preflight OPTIONS request
@@ -23,8 +23,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Check for Content-Type header
+if (!isset($_SERVER['CONTENT_TYPE']) || strpos($_SERVER['CONTENT_TYPE'], 'application/json') === false) {
+    http_response_code(415);
+    echo json_encode(['success' => false, 'error' => 'Unsupported Media Type. Content-Type must be application/json']);
+    exit;
+}
+
 // Include config file with all necessary functions
 require_once('config.php');
+
+// Set execution time limit to prevent long-running scripts
+set_time_limit(30); // 30 seconds max execution time
 
 // Log request
 $requestTime = date('Y-m-d H:i:s');
@@ -32,8 +42,18 @@ logMessage("===== Quote Request: $requestTime =====", 'api_log.txt');
 logMessage("Remote IP: " . $_SERVER['REMOTE_ADDR'], 'api_log.txt');
 
 try {
-    // Get raw POST data
-    $rawData = file_get_contents('php://input');
+    // Check for request size limits
+    $contentLength = isset($_SERVER['CONTENT_LENGTH']) ? (int)$_SERVER['CONTENT_LENGTH'] : 0;
+    if ($contentLength > 500000) { // ~500KB
+        throw new Exception('Request entity too large', 413);
+    }
+    
+    // Get raw POST data with size limit
+    $rawData = file_get_contents('php://input', false, null, 0, 500000);
+    if ($rawData === false) {
+        throw new Exception('Failed to read request body', 400);
+    }
+    
     logMessage("Raw data received", 'api_log.txt');
     
     // Parse JSON data
@@ -44,9 +64,17 @@ try {
         throw new Exception('Invalid JSON: ' . json_last_error_msg(), 400);
     }
     
+    // Sanitize input data to prevent XSS
+    $data = sanitizeInput($data);
+    
     // Validate the form data
     validateFormData($data);
     logMessage("Data validation passed", 'api_log.txt');
+
+    // Check for rate limits
+    if (!checkRateLimit($_SERVER['REMOTE_ADDR'])) {
+        throw new Exception('Rate limit exceeded. Please try again later.', 429);
+    }
 
     // Get PostgreSQL connection
     $pdo = getPgConnection();
@@ -201,6 +229,12 @@ try {
 
 } catch (Exception $e) {
     $statusCode = $e->getCode() ?: 500;
+    
+    // Ensure standard HTTP status codes
+    if (!in_array($statusCode, [400, 401, 403, 404, 405, 413, 429, 500])) {
+        $statusCode = 500;
+    }
+    
     http_response_code($statusCode);
     
     // For security, don't expose detailed error messages in production
@@ -220,5 +254,58 @@ try {
     
     // Log the actual error with details
     logMessage("Error: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString(), 'error_log.txt');
+}
+
+/**
+ * Check if the client is within rate limits
+ * @param string $ip The client IP address
+ * @return bool True if within limits, false otherwise
+ */
+function checkRateLimit($ip) {
+    $logDir = getenv_default('LOG_DIR', __DIR__ . '/logs');
+    $rateFile = $logDir . '/rate_limits.json';
+    
+    // Create or load rate limit data
+    if (file_exists($rateFile)) {
+        $rateData = json_decode(file_get_contents($rateFile), true);
+    } else {
+        $rateData = [];
+    }
+    
+    // Clean up old entries (older than 1 hour)
+    $now = time();
+    foreach ($rateData as $clientIp => $data) {
+        if ($now - $data['timestamp'] > 3600) {
+            unset($rateData[$clientIp]);
+        }
+    }
+    
+    // Check if IP exists and increment count
+    if (isset($rateData[$ip])) {
+        // If more than 10 requests in the last minute, block
+        if ($rateData[$ip]['count'] >= 10 && ($now - $rateData[$ip]['timestamp']) < 60) {
+            return false;
+        }
+        
+        // If last request was within a minute, increment; otherwise reset
+        if ($now - $rateData[$ip]['timestamp'] < 60) {
+            $rateData[$ip]['count']++;
+        } else {
+            $rateData[$ip]['count'] = 1;
+        }
+        
+        $rateData[$ip]['timestamp'] = $now;
+    } else {
+        // First request from this IP
+        $rateData[$ip] = [
+            'count' => 1,
+            'timestamp' => $now
+        ];
+    }
+    
+    // Save updated rate data
+    file_put_contents($rateFile, json_encode($rateData));
+    
+    return true;
 }
 ?>

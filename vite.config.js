@@ -42,13 +42,7 @@ export default defineConfig({
 	server: {
 		port: 5173,
 		open: true,
-		// Proxy API requests to the production server during development
-		proxy: {
-			"/api": {
-				target: "https://surestrat.co.za",
-				changeOrigin: true,
-				secure: false,
-			},
-		},
+		// Use local simulation instead of proxy for development
+		// Remove proxy config to use local simulation mode
 	},
 });

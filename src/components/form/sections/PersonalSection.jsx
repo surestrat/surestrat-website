@@ -1,35 +1,23 @@
-import { User } from "lucide-react";
+import {
+	User,
+	Phone,
+	Mail,
+	MapPin,
+	Briefcase,
+	Users,
+	CreditCard,
+} from "lucide-react";
 import SectionHeader from "../SectionHeader";
 import FormSection from "../FormSection";
 import { InputField, SelectField } from "../FormField";
+import SectionDivider from "../SectionDivider";
+import {
+	provinceOptions,
+	maritalOptions,
+	employmentOptions,
+} from "@constants/formOptions";
 
 const PersonalSection = ({ openSections, toggleSection, register, errors }) => {
-	const provinceOptions = [
-		{ value: "gauteng", label: "Gauteng" },
-		{ value: "western-cape", label: "Western Cape" },
-		{ value: "kwazulu-natal", label: "KwaZulu-Natal" },
-		{ value: "eastern-cape", label: "Eastern Cape" },
-		{ value: "free-state", label: "Free State" },
-		{ value: "limpopo", label: "Limpopo" },
-		{ value: "mpumalanga", label: "Mpumalanga" },
-		{ value: "north-west", label: "North West" },
-		{ value: "northern-cape", label: "Northern Cape" },
-	];
-
-	const maritalOptions = [
-		{ value: "single", label: "Single" },
-		{ value: "married", label: "Married" },
-		{ value: "divorced", label: "Divorced" },
-		{ value: "widowed", label: "Widowed" },
-	];
-
-	const employmentOptions = [
-		{ value: "employed", label: "Employed" },
-		{ value: "self-employed", label: "Self-Employed" },
-		{ value: "unemployed", label: "Unemployed" },
-		{ value: "retired", label: "Retired" },
-	];
-
 	return (
 		<div>
 			<SectionHeader
@@ -40,16 +28,27 @@ const PersonalSection = ({ openSections, toggleSection, register, errors }) => {
 				toggleSection={toggleSection}
 			/>
 			<FormSection isOpen={openSections.personal}>
+				{/* Contact Information */}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<InputField
 						register={register}
 						name="firstName"
 						placeholder="First Name"
+						icon={User}
 						required={true}
 						validation={{
 							minLength: {
 								value: 2,
-								message: "Minimum 2 characters",
+								message: "First name must be at least 2 characters",
+							},
+							maxLength: {
+								value: 50,
+								message: "First name cannot exceed 50 characters",
+							},
+							pattern: {
+								value: /^[A-Za-z\s\-']+$/,
+								message:
+									"First name can only contain letters, spaces, hyphens and apostrophes",
 							},
 						}}
 						errors={errors}
@@ -58,13 +57,30 @@ const PersonalSection = ({ openSections, toggleSection, register, errors }) => {
 						register={register}
 						name="lastName"
 						placeholder="Last Name"
+						icon={User}
 						required={true}
+						validation={{
+							minLength: {
+								value: 2,
+								message: "Last name must be at least 2 characters",
+							},
+							maxLength: {
+								value: 50,
+								message: "Last name cannot exceed 50 characters",
+							},
+							pattern: {
+								value: /^[A-Za-z\s\-']+$/,
+								message:
+									"Last name can only contain letters, spaces, hyphens and apostrophes",
+							},
+						}}
 						errors={errors}
 					/>
 					<InputField
 						register={register}
 						name="idNumber"
 						placeholder="SA ID Number"
+						icon={CreditCard}
 						required={true}
 						validation={{
 							pattern: {
@@ -78,26 +94,53 @@ const PersonalSection = ({ openSections, toggleSection, register, errors }) => {
 						register={register}
 						name="phone"
 						placeholder="Phone Number"
+						icon={Phone}
+						required={true}
+						validation={{
+							pattern: {
+								value: /^(\+27|0)[6-8][0-9]{8}$/,
+								message: "Please enter a valid South African phone number",
+							},
+						}}
 						errors={errors}
 					/>
+				</div>
+
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<InputField
 						register={register}
 						name="email"
 						placeholder="Email Address"
 						type="email"
+						icon={Mail}
+						required={true}
+						validation={{
+							pattern: {
+								value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+								message: "Please enter a valid email address",
+							},
+						}}
 						errors={errors}
 					/>
 					<SelectField
 						register={register}
 						name="province"
 						placeholder="Select Province"
+						icon={MapPin}
 						options={provinceOptions}
+						required={true}
 						errors={errors}
 					/>
+				</div>
+
+				<SectionDivider text="Additional Information (Optional)" />
+
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<SelectField
 						register={register}
 						name="maritalStatus"
 						placeholder="Marital Status"
+						icon={Users}
 						options={maritalOptions}
 						errors={errors}
 					/>
@@ -105,6 +148,7 @@ const PersonalSection = ({ openSections, toggleSection, register, errors }) => {
 						register={register}
 						name="employmentStatus"
 						placeholder="Employment Status"
+						icon={Briefcase}
 						options={employmentOptions}
 						errors={errors}
 					/>
@@ -112,12 +156,14 @@ const PersonalSection = ({ openSections, toggleSection, register, errors }) => {
 						register={register}
 						name="occupation"
 						placeholder="Occupation"
+						icon={Briefcase}
 						errors={errors}
 					/>
 					<InputField
 						register={register}
 						name="monthlyIncome"
 						placeholder="Monthly Income (Optional)"
+						icon={CreditCard}
 						type="number"
 						errors={errors}
 					/>

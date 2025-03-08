@@ -1,8 +1,36 @@
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, ShieldCheck } from "lucide-react";
 
 const TermsSection = ({ register, errors }) => {
+	const handleTermsClick = () => {
+		// Track terms acknowledgment
+		try {
+			if (typeof window !== "undefined" && window.localStorage) {
+				window.localStorage.setItem("terms_viewed", new Date().toISOString());
+			}
+		} catch (err) {
+			// Silently fail if localStorage is not available
+			console.warn("Failed to save terms acknowledgment", err);
+		}
+	};
+
 	return (
-		<div className="space-y-2">
+		<div className="p-4 mt-6 space-y-3 bg-blue-50 rounded-lg">
+			<div className="flex items-start gap-3">
+				<div className="flex-shrink-0 p-1 bg-blue-100 rounded-full">
+					<ShieldCheck className="w-5 h-5 text-blue-600" />
+				</div>
+				<div>
+					<h3 className="text-sm font-medium text-gray-900">
+						Data Protection & Privacy
+					</h3>
+					<p className="mt-1 text-xs leading-relaxed text-gray-600">
+						We take your privacy seriously. Your data is encrypted and secured.
+						We collect only the information necessary to provide accurate quotes
+						and process your insurance applications.
+					</p>
+				</div>
+			</div>
+
 			<div className="flex items-start space-x-2">
 				<div className="flex items-center h-5">
 					<input
@@ -12,6 +40,8 @@ const TermsSection = ({ register, errors }) => {
 						{...register("termsAccepted", {
 							required: "You must agree to the terms and conditions",
 						})}
+						aria-invalid={errors.termsAccepted ? "true" : "false"}
+						onClick={handleTermsClick}
 					/>
 				</div>
 				<div className="text-sm">
@@ -24,16 +54,43 @@ const TermsSection = ({ register, errors }) => {
 						I agree to the terms and conditions
 					</label>
 					<p className="text-gray-500">
-						By submitting this form, you agree to our privacy policy and terms
-						of service.
+						By submitting this form, you agree to our{" "}
+						<a
+							href="/privacy-policy"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-800"
+						>
+							privacy policy
+						</a>{" "}
+						and{" "}
+						<a
+							href="/terms-of-service"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-800"
+						>
+							terms of service
+						</a>
+						.
 					</p>
 					{errors.termsAccepted && (
-						<p className="mt-1 text-sm text-red-600">
+						<p className="mt-1 text-sm text-red-600" role="alert">
 							{errors.termsAccepted.message}
 						</p>
 					)}
 				</div>
 			</div>
+
+			{/* Display any root server errors */}
+			{errors.root?.serverError && (
+				<div
+					className="p-3 mt-2 text-sm text-red-800 bg-red-100 border border-red-200 rounded-md"
+					role="alert"
+				>
+					{errors.root.serverError.message}
+				</div>
+			)}
 		</div>
 	);
 };
