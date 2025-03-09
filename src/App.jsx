@@ -13,6 +13,7 @@ import { Suspense, useEffect } from "react";
 import ErrorBoundary from "@components/ErrorBoundary";
 import ToastProvider from "./components/providers/ToastProvider";
 import { ErrorProvider } from "@context/ErrorContext";
+import QuoteDashboard from "./pages/admin/QuoteDashboard";
 
 // Route logger component
 const RouteLogger = () => {
@@ -67,6 +68,7 @@ function App() {
 							<Route path="/claims-portal" element={<ClaimsPortalPage />} />
 							<Route path="/get-quote" element={<QuoteForm />} />
 							<Route path="/contact" element={<div>Contact</div>} />
+							<Route path="/admin" element={<QuoteDashboard />} />
 							<Route
 								path="*"
 								element={

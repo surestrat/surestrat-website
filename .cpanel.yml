@@ -3,21 +3,35 @@ deployment:
     - export DEPLOYPATH=/home/surestr2/public_html/
     # Create a backup of the current site
     - if [ -d $DEPLOYPATH ]; then mkdir -p ~/site_backups/$(date +%Y%m%d_%H%M%S); cp -R $DEPLOYPATH/* ~/site_backups/$(date +%Y%m%d_%H%M%S)/; fi
-    # Clean existing deploy directory (except for some sensitive files)
-    - find $DEPLOYPATH -mindepth 1 -not -path "$DEPLOYPATH/api*" -not -path "$DEPLOYPATH/.htaccess" -not -path "$DEPLOYPATH/.env*" -delete
+
+    # Clean existing deploy directory (but preserve environment files)
+    - find $DEPLOYPATH -mindepth 1 -not -path "$DEPLOYPATH/.env*" -delete
+
     # Copy new files
     - /bin/cp -R dist/* $DEPLOYPATH
-    # Copy .htaccess file explicitly
+
+    # Copy .htaccess file explicitly with Appwrite and React Router configurations
     - /bin/cp -f public/.htaccess $DEPLOYPATH/.htaccess
+
     # Ensure proper permissions
     - find $DEPLOYPATH -type f -exec chmod 644 {} \;
     - find $DEPLOYPATH -type d -exec chmod 755 {} \;
-    # Set proper mime types for JavaScript files
+
+    # Set proper mime types for JavaScript files (removed immutable flag)
     - find $DEPLOYPATH -type f -name "*.js" -exec chmod 644 {} \;
-    - find $DEPLOYPATH -type f -name "*.js" -exec chattr +i {} \;
-    # Ensure PHP files are executable
-    - find $DEPLOYPATH -name "*.php" -type f -exec chmod 755 {} \;
-    # Make sure the API directory has the right permissions
-    - if [ -d "$DEPLOYPATH/api" ]; then chmod 755 $DEPLOYPATH/api; fi
+
+    # Create necessary directories if they don't exist
+    - mkdir -p $DEPLOYPATH/assets
+
+    # Clear opcache if installed to prevent serving old cached versions
+    - if [ -f /usr/local/bin/php ]; then /usr/local/bin/php -r 'if(function_exists("opcache_reset")) { opcache_reset(); }'; fi
+
+    # Create an empty .htaccess file in assets directory to prevent directory listing
+    - touch $DEPLOYPATH/assets/.htaccess
+    - echo "Options -Indexes" > $DEPLOYPATH/assets/.htaccess
+
+    # Add version identifier for cache busting
+    - echo "$(date +%Y%m%d%H%M)" > $DEPLOYPATH/build_version.txt
+
     # Log deployment
-    - echo "Deployment completed at $(date)" > $DEPLOYPATH/deploy_log.txt
+    - echo "Appwrite-enabled deployment completed at $(date)" > $DEPLOYPATH/deploy_log.txt

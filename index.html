@@ -5,21 +5,117 @@
 		<link rel="icon" type="image/svg+xml" href="/surestrat-logo.png" />
 		<meta
 			name="viewport"
-			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+			content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
 		/>
-		<!-- Security and mobile-friendly meta tags -->
+		<!-- SEO Meta Tags -->
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="format-detection" content="telephone=no" />
 		<meta name="theme-color" content="#ffffff" />
 		<meta
 			name="description"
-			content="SureStrat Insurance Brokers offers comprehensive insurance solutions for South Africans. Get quotes for auto, home, life, and business insurance."
+			content="SureStrat Insurance Brokers offers comprehensive insurance solutions tailored for South Africans. Get personalized quotes for auto, home, life, and business insurance at competitive rates."
 		/>
-		<!-- Prevent Apple from detecting phone numbers -->
+		<meta
+			name="keywords"
+			content="Insurance, South Africa, Auto Insurance, Home Insurance, Life Insurance, Business Insurance, Insurance Quotes, Insurance Broker, SureStrat"
+		/>
+		<meta name="author" content="SureStrat Insurance Brokers" />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href="https://yourwebsite.co.za/" />
+
+		<!-- Open Graph / Facebook Meta Tags -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://yourwebsite.co.za/" />
+		<meta
+			property="og:title"
+			content="SureStrat Insurance Brokers | Comprehensive Insurance Solutions"
+		/>
+		<meta
+			property="og:description"
+			content="SureStrat Insurance Brokers offers comprehensive insurance solutions tailored for South Africans. Get personalized quotes today."
+		/>
+		<meta
+			property="og:image"
+			content="https://yourwebsite.co.za/images/surestrat-social-banner.jpg"
+		/>
+		<meta property="og:locale" content="en_ZA" />
+
+		<!-- Twitter Meta Tags -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta
+			name="twitter:title"
+			content="SureStrat Insurance Brokers | Comprehensive Insurance Solutions"
+		/>
+		<meta
+			name="twitter:description"
+			content="SureStrat Insurance Brokers offers comprehensive insurance solutions tailored for South Africans. Get personalized quotes today."
+		/>
+		<meta
+			name="twitter:image"
+			content="https://yourwebsite.co.za/images/surestrat-social-banner.jpg"
+		/>
+
+		<!-- Favicon Links -->
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+		<link rel="manifest" href="/site.webmanifest" />
+
+		<!-- Prevents Apple from detecting phone numbers -->
 		<meta name="format-detection" content="telephone=no" />
 		<!-- Prevents page from being translated -->
 		<meta name="google" content="notranslate" />
-		<title>SureStrat</title>
+		<title>
+			SureStrat Insurance Brokers | Comprehensive Insurance Solutions for South
+			Africans
+		</title>
+
+		<!-- Schema.org structured data for Local Business -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "InsuranceAgency",
+				"name": "SureStrat Insurance Brokers",
+				"image": "https://surestrat.co.za/surestrat-logo.png",
+				"url": "https://surestrat.co.za",
+				"telephone": "+27123456789",
+				"address": {
+					"@type": "PostalAddress",
+					"streetAddress": "6763 Peacock St, south, Lenasia",
+					"addressLocality": "Lenasia South, Johannesburg",
+					"postalCode": "1829",
+					"addressCountry": "ZA"
+				},
+				"geo": {
+					"@type": "GeoCoordinates",
+					"latitude": "-26.380737859647684",
+					"longitude": "27.843733287323932"
+				},
+				"openingHoursSpecification": {
+					"@type": "OpeningHoursSpecification",
+					"dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+					"opens": "08:00",
+					"closes": "17:00"
+				},
+				"sameAs": [
+					"https://facebook.com/surestrat",
+					"https://twitter.com/surestrat",
+					"https://linkedin.com/company/surestrat"
+				]
+			}
+		</script>
+
+		<!-- Ad blocker and diagnostics scripts -->
+		<script src="js/ad-blocker-detection.js"></script>
+		<script src="js/mobile-diagnostics.js"></script>
+
+		<!-- Preconnect to required domains to improve performance -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+		<!-- Preload critical resources -->
+		<link rel="preload" href="/src/main.jsx" as="script" />
+		<link rel="preload" href="/surestrat-logo.png" as="image" />
 	</head>
 	<body>
 		<div id="root"></div>

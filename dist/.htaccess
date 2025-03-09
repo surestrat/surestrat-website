@@ -3,26 +3,12 @@
     RewriteEngine On
     RewriteBase /
 
-    # Handle React Router Routes
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.html [L]
-
-    # Allow direct access to submit-quote.php
-    RewriteRule ^api/submit-quote\.php$ api/submit-quote.php [L]
-
-    #Prevent direct access to any other .php files in api folder.
-    RewriteRule ^api/.*\.php$ - [F,L]
-
-    # Handle API requests
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_URI} ^/api/
-    RewriteRule ^api/(.*)$ api/$1 [L]
-
-    # If the file or directory doesn't exist, serve index.html
+    # Handle React Router SPA routes - send all requests to index.html except for actual files and directories
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.html [QSA,L]
+
+    # No need for separate API handling since Appwrite handles its own endpoints
 </IfModule>
 
 # Proper MIME type for all files
@@ -50,7 +36,7 @@
   AddType font/woff2 .woff2
 </IfModule>
 
-# Security headers
+# Security headers - modified to allow Appwrite connections
 <IfModule mod_headers.c>
   # Protect against clickjacking
   Header always set X-Frame-Options "SAMEORIGIN"
@@ -64,8 +50,15 @@
   # Disable FLoC tracking
   Header always set Permissions-Policy "interest-cohort=()"
   
-  # Content Security Policy to prevent unwanted scripts and popups
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.surestrat.co.za; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'"
+  # Content Security Policy modified to allow Appwrite connections
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.surestrat.co.za wss://*.surestrat.co.za https://*.appwrite.io wss://*.appwrite.io; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'"
+  
+  # Enable CORS for Appwrite
+  <FilesMatch "\.(html|htm|js|json|css)$">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
+    Header set Access-Control-Allow-Headers "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-Appwrite-Project,X-Appwrite-Key,X-Fallback-Cookies"
+  </FilesMatch>
 </IfModule>
 
 # Disable ETags as they are most likely misconfigured and

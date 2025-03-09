@@ -39,25 +39,25 @@ export default defineConfig({
 		},
 	},
 
-	server: {
-		port: 5173,
-		open: true,
-		headers: {
-			"X-Frame-Options": "SAMEORIGIN",
-			"X-Content-Type-Options": "nosniff",
-			"Referrer-Policy": "strict-origin-when-cross-origin",
-			"Permissions-Policy": "interest-cohort=()",
-		},
-	},
+	// server: {
+	// 	port: 5173,
+	// 	open: true,
+	// 	headers: {
+	// 		"X-Frame-Options": "SAMEORIGIN",
+	// 		"X-Content-Type-Options": "nosniff",
+	// 		"Referrer-Policy": "strict-origin-when-cross-origin",
+	// 		"Permissions-Policy": "interest-cohort=()",
+	// 	},
+	// },
 
 	// Ensure proper MIME types are set
-	preview: {
-		port: 4173,
-		headers: {
-			"X-Frame-Options": "SAMEORIGIN",
-			"X-Content-Type-Options": "nosniff",
-			"Referrer-Policy": "strict-origin-when-cross-origin",
-			"Permissions-Policy": "interest-cohort=()",
-		},
-	},
+	// preview: {
+	// 	port: 4173,
+	// 	headers: {
+	// 		"X-Frame-Options": "SAMEORIGIN",
+	// 		"X-Content-Type-Options": "nosniff",
+	// 		"Referrer-Policy": "strict-origin-when-cross-origin",
+	// 		"Permissions-Policy": "interest-cohort=()",
+	// 	},
+	// },
 });

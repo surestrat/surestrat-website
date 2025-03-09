@@ -1,70 +1,6 @@
-import axios from "axios";
 import { logger } from "@utils/logger";
 import { quoteFormSchema } from "@schemas/quoteFormSchema";
-import { createPostConfig } from "@constants/fetchConfig";
-
-// Create axios instance with default configurations
-const api = axios.create({
-	headers: {
-		"Content-Type": "application/json",
-	},
-	timeout: 30000, // 30 seconds
-});
-
-// Add a request interceptor for logging and validation
-api.interceptors.request.use(
-	(config) => {
-		// Log the request details
-		logger.debug(
-			`🚀 Making ${config.method.toUpperCase()} request to: ${config.url}`
-		);
-
-		// Check for data size limits to prevent oversized payloads
-		if (config.data && JSON.stringify(config.data).length > 1000000) {
-			// ~1MB limit
-			logger.error("❌ Request payload too large");
-			throw new Error(
-				"Request payload too large. Please reduce the size of your submission."
-			);
-		}
-
-		// Add timestamp to the request for tracking
-		config.headers["X-Request-Time"] = new Date().toISOString();
-
-		return config;
-	},
-	(error) => {
-		logger.error("❌ Request error:", error);
-		return Promise.reject(error);
-	}
-);
-
-// Add a response interceptor for logging
-api.interceptors.response.use(
-	(response) => {
-		logger.debug(
-			`✅ Response received from ${response.config.url}:`,
-			response.status
-		);
-		return response;
-	},
-	(error) => {
-		if (error.response) {
-			// Server responded with non-2xx status
-			logger.error(
-				`🔴 Server response error ${error.response.status}:`,
-				error.response.data
-			);
-		} else if (error.request) {
-			// Request was made but no response received
-			logger.error("🔴 No response received:", error.request);
-		} else {
-			// Error setting up the request
-			logger.error("🔴 Request setup error:", error.message);
-		}
-		return Promise.reject(error);
-	}
-);
+import db from "../appwrite/databases";
 
 // Sanitize numeric fields
 const sanitizeNumericFields = (data) => {
@@ -95,22 +31,6 @@ const sanitizeNumericFields = (data) => {
 	}
 
 	return sanitized;
-};
-
-// Check if a response is valid JSON or PHP source code
-const isValidResponse = (responseText) => {
-	// Check if response starts with PHP opening tag
-	if (responseText.trim().startsWith("<?php")) {
-		return false;
-	}
-
-	// Try parsing as JSON
-	try {
-		JSON.parse(responseText);
-		return true;
-	} catch (e) {
-		return false;
-	}
 };
 
 /**
@@ -206,105 +126,140 @@ export const handleQuoteSubmission = async (
 				setSubmitSuccess(false);
 			}, 5000);
 
-			return;
+			return mockResponse;
 		}
 
-		// For production mode
-		const apiUrl = `/api/submit-quote.php`;
+		// Generate unique reference number
+		const referenceNumber = `QT${new Date()
+			.toISOString()
+			.slice(0, 10)
+			.replace(/-/g, "")}${Math.floor(1000 + Math.random() * 9000)}`;
+		const timestamp = new Date().toISOString();
 
-		logger.debug("🔗 Using API endpoint:", apiUrl);
+		// Create quote document in Appwrite
+		const quoteData = {
+			reference_number: referenceNumber,
+			status: "pending",
+			created_at: timestamp,
+			updated_at: timestamp,
+		};
 
-		try {
-			// Add timeout handling with a Promise race
-			const timeoutPromise = new Promise((_, reject) => {
-				setTimeout(
-					() => reject(new Error("Request timed out. Please try again later.")),
-					30000
-				);
+		// 1. Create the main quote document
+		const quote = await db.quotes.create(quoteData);
+
+		const quoteId = quote.$id;
+		logger.debug("Quote created with ID:", quoteId);
+
+		// 2. Add personal details
+		const personalData = {
+			quote_id: quoteId,
+			first_name: validatedData.firstName,
+			last_name: validatedData.lastName,
+			id_number: validatedData.idNumber,
+			phone: validatedData.phone,
+			email: validatedData.email,
+			province: validatedData.province,
+			marital_status: validatedData.maritalStatus || null,
+			employment_status: validatedData.employmentStatus || null,
+			occupation: validatedData.occupation || null,
+			monthly_income: validatedData.monthlyIncome || null,
+		};
+
+		await db.personalDetails.create(personalData);
+		logger.debug("Personal details added");
+
+		// 3. Add insurance types and related details
+		for (const insuranceType of validatedData.insuranceTypes) {
+			// Add the insurance type
+			await db.insuranceTypes.create({
+				quote_id: quoteId,
+				insurance_type: insuranceType,
 			});
 
-			// Make API request with timeout race
-			const response = await Promise.race([
-				fetch(apiUrl, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						"X-Requested-With": "XMLHttpRequest",
-						Accept: "application/json",
-					},
-					body: JSON.stringify(validatedData),
-				}),
-				timeoutPromise,
-			]);
-
-			// Handle HTTP status errors
-			if (!response.ok) {
-				const errorText = await response.text();
-				let errorMessage = "Failed to submit quote";
-
-				try {
-					// Try to parse as JSON
-					const errorData = JSON.parse(errorText);
-					errorMessage = errorData.error || `Server error: ${response.status}`;
-				} catch (e) {
-					// If not valid JSON, check if it's PHP code
-					if (errorText.includes("<?php")) {
-						errorMessage =
-							"Server configuration error. Please try again later.";
-					} else {
-						errorMessage = `Server error: ${response.status}`;
+			// Add specific insurance details based on type
+			switch (insuranceType) {
+				case "vehicle":
+					if (validatedData.vehicleType) {
+						await db.vehicleDetails.create({
+							quote_id: quoteId,
+							vehicle_count: validatedData.vehicleCount || null,
+							vehicle_type: validatedData.vehicleType || null,
+							vehicle_year: validatedData.vehicleYear || null,
+							vehicle_make: validatedData.vehicleMake || null,
+							vehicle_model: validatedData.vehicleModel || null,
+							vehicle_usage: validatedData.vehicleUsage || null,
+						});
+						logger.debug("Vehicle details added");
 					}
-				}
+					break;
 
-				throw new Error(errorMessage);
+				case "home":
+					await db.propertyDetails.create({
+						quote_id: quoteId,
+						property_type: validatedData.propertyType || null,
+						property_value: validatedData.propertyValue || null,
+						property_address: validatedData.propertyAddress || null,
+						security_measures: validatedData.securityMeasures || null,
+					});
+					logger.debug("Property details added");
+					break;
+
+				case "life":
+					await db.lifeInsuranceDetails.create({
+						quote_id: quoteId,
+						age: validatedData.age || null,
+						smoking_status: validatedData.smokingStatus || null,
+						coverage_amount: validatedData.coverageAmount || null,
+						existing_conditions: validatedData.existingConditions || null,
+					});
+					logger.debug("Life insurance details added");
+					break;
+
+				case "business":
+					await db.businessDetails.create({
+						quote_id: quoteId,
+						business_name: validatedData.businessName || null,
+						business_type: validatedData.businessType || null,
+						coverage_types: validatedData.coverageTypes || null,
+						employee_count: validatedData.employeeCount || null,
+					});
+					logger.debug("Business details added");
+					break;
 			}
-
-			// Parse the JSON response
-			let responseData;
-			try {
-				responseData = await response.json();
-			} catch (e) {
-				throw new Error("Invalid response format from server");
-			}
-
-			logger.debug("📥 API response:", responseData);
-
-			// Check for success
-			if (!responseData.success) {
-				throw new Error(responseData.error || "Failed to submit quote");
-			}
-
-			// Handle success
-			logger.info("✅ Quote submitted successfully!");
-			logger.debug("🆔 Quote ID:", responseData.quoteId);
-			logger.debug("📝 Reference:", responseData.reference);
-
-			// Update UI state
-			setSubmitSuccess(true);
-			reset(); // Reset form fields
-
-			// Reset success state after delay
-			setTimeout(() => {
-				setSubmitSuccess(false);
-			}, 5000);
-
-			return responseData;
-		} catch (error) {
-			logger.error("💔 API request failed:", error);
-
-			let errorMessage = "Failed to submit quote";
-
-			if (
-				error.name === "TypeError" &&
-				error.message.includes("Failed to fetch")
-			) {
-				errorMessage = "Network error. Please check your internet connection.";
-			} else if (error.message) {
-				errorMessage = error.message;
-			}
-
-			throw new Error(errorMessage);
 		}
+
+		// 4. Store terms agreement
+		await db.termsAgreement.create({
+			quote_id: quoteId,
+			terms_accepted: true,
+			accepted_at: new Date().toISOString(),
+		});
+		logger.debug("Terms agreement recorded");
+
+		// Prepare response object
+		const response = {
+			success: true,
+			message: "Quote submitted successfully",
+			quoteId: quoteId,
+			reference: referenceNumber,
+			timestamp: timestamp,
+		};
+
+		// Handle success
+		logger.info("✅ Quote submitted successfully!");
+		logger.debug("🆔 Quote ID:", response.quoteId);
+		logger.debug("📝 Reference:", response.reference);
+
+		// Update UI state
+		setSubmitSuccess(true);
+		reset(); // Reset form fields
+
+		// Reset success state after delay
+		setTimeout(() => {
+			setSubmitSuccess(false);
+		}, 5000);
+
+		return response;
 	} catch (error) {
 		logger.error("💔 Quote submission failed:", error);
 		setSubmitError(error.message || "An unexpected error occurred");
