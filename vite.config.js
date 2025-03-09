@@ -11,15 +11,18 @@ export default defineConfig({
 		outDir: "dist",
 		assetsDir: "assets",
 		emptyOutDir: true,
-		sourcemap: false,
+		sourcemap: true,
+		minify: true,
+		reportCompressedSize: true,
 		rollupOptions: {
 			output: {
-				manualChunks: {
-					vendor: ["react", "react-dom", "react-router-dom"],
-					ui: ["framer-motion", "lucide-react"],
-				},
+				manualChunks: undefined,
+				chunkFileNames: "assets/[name]-[hash].js",
+				entryFileNames: "assets/[name]-[hash].js",
+				assetFileNames: "assets/[name]-[hash].[ext]",
 			},
 		},
+		cssCodeSplit: false,
 	},
 
 	resolve: {
@@ -32,32 +35,24 @@ export default defineConfig({
 			"@hooks": path.resolve(__dirname, "./src/hooks"),
 			"@context": "/src/context",
 			"@assets": path.resolve(__dirname, "./src/assets"),
-			"@services": "/src/services",
+			"@services": path.resolve(__dirname, "./src/services"),
 			"@config": "/src/config",
 			"@constants": path.resolve(__dirname, "./src/constants"),
 			"@schemas": path.resolve(__dirname, "./src/schemas"),
 		},
 	},
 
+	// Uncomment and use this for local development if needed
 	// server: {
 	// 	port: 5173,
 	// 	open: true,
+	// 	cors: true, // Enable CORS for Appwrite
 	// 	headers: {
 	// 		"X-Frame-Options": "SAMEORIGIN",
-	// 		"X-Content-Type-Options": "nosniff",
 	// 		"Referrer-Policy": "strict-origin-when-cross-origin",
 	// 		"Permissions-Policy": "interest-cohort=()",
 	// 	},
 	// },
 
-	// Ensure proper MIME types are set
-	// preview: {
-	// 	port: 4173,
-	// 	headers: {
-	// 		"X-Frame-Options": "SAMEORIGIN",
-	// 		"X-Content-Type-Options": "nosniff",
-	// 		"Referrer-Policy": "strict-origin-when-cross-origin",
-	// 		"Permissions-Policy": "interest-cohort=()",
-	// 	},
-	// },
+	base: "./",
 });

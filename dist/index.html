@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<link rel="icon" type="image/svg+xml" href="/surestrat-logo.png" />
+		<link rel="icon" type="image/svg+xml" href="surestrat-logo.png" />
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
@@ -21,11 +21,11 @@
 		/>
 		<meta name="author" content="SureStrat Insurance Brokers" />
 		<meta name="robots" content="index, follow" />
-		<link rel="canonical" href="https://yourwebsite.co.za/" />
+		<link rel="canonical" href="https://surestrat.co.za/" />
 
 		<!-- Open Graph / Facebook Meta Tags -->
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content="https://yourwebsite.co.za/" />
+		<meta property="og:url" content="https://surestrat.co.za/" />
 		<meta
 			property="og:title"
 			content="SureStrat Insurance Brokers | Comprehensive Insurance Solutions"
@@ -36,7 +36,7 @@
 		/>
 		<meta
 			property="og:image"
-			content="https://yourwebsite.co.za/images/surestrat-social-banner.jpg"
+			content="https://surestrat.co.za/images/surestrat-social-banner.jpg"
 		/>
 		<meta property="og:locale" content="en_ZA" />
 
@@ -52,14 +52,14 @@
 		/>
 		<meta
 			name="twitter:image"
-			content="https://yourwebsite.co.za/images/surestrat-social-banner.jpg"
+			content="https://surestrat.co.za/images/surestrat-social-banner.jpg"
 		/>
 
 		<!-- Favicon Links -->
-		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-		<link rel="manifest" href="/assets/site-BEyZ2ypz.webmanifest" />
+		<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+		<link rel="manifest" href="./assets/site-BloOrP7Q.webmanifest" />
 
 		<!-- Prevents Apple from detecting phone numbers -->
 		<meta name="format-detection" content="telephone=no" />
@@ -69,6 +69,9 @@
 			SureStrat Insurance Brokers | Comprehensive Insurance Solutions for South
 			Africans
 		</title>
+
+		<!-- Appwrite SDK -->
+		<script src="https://cdn.jsdelivr.net/npm/appwrite@11.0.0"></script>
 
 		<!-- Schema.org structured data for Local Business -->
 		<script type="application/ld+json">
@@ -105,21 +108,36 @@
 			}
 		</script>
 
-		<!-- Ad blocker and diagnostics scripts -->
-		<script src="js/ad-blocker-detection.js"></script>
-		<script src="js/mobile-diagnostics.js"></script>
+		<!-- Remove script preloading since it's causing issues -->
+		<!-- Instead, inline the essential detection script -->
+		<script>
+			// Simple ad blocker detection
+			document.addEventListener("DOMContentLoaded", function () {
+				const testAd = document.createElement("div");
+				testAd.className = "ads ad adsbox";
+				testAd.style.position = "absolute";
+				testAd.style.opacity = "0";
+				document.body.appendChild(testAd);
 
-		<!-- Preconnect to required domains to improve performance -->
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-		<!-- Preload critical resources -->
-		<link rel="preload" href="data:text/jsx;base64,aW1wb3J0IHsgU3RyaWN0TW9kZSB9IGZyb20gInJlYWN0IjsKaW1wb3J0IHsgY3JlYXRlUm9vdCB9IGZyb20gInJlYWN0LWRvbS9jbGllbnQiOwppbXBvcnQgIkBzdHlsZXMvaW5kZXguY3NzIjsKaW1wb3J0IEFwcCBmcm9tICIuL0FwcC5qc3giOwoKY3JlYXRlUm9vdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgicm9vdCIpKS5yZW5kZXIoCgk8U3RyaWN0TW9kZT4KCQk8QXBwIC8+Cgk8L1N0cmljdE1vZGU+Cik7Cg==" as="script" />
-		<link rel="preload" href="/surestrat-logo.png" as="image" />
-		<script type="module" crossorigin src="/assets/index-BDIjvOBA.js"></script>
-		<link rel="modulepreload" crossorigin href="/assets/vendor-DJD7BeDt.js">
-		<link rel="modulepreload" crossorigin href="/assets/ui-ur2ZGqUH.js">
-		<link rel="stylesheet" crossorigin href="/assets/index-C2qdYb7U.css">
+				setTimeout(function () {
+					if (testAd.offsetHeight === 0 || testAd.offsetParent === null) {
+						console.warn("Ad blocker detected");
+						const message = document.createElement("div");
+						message.style.padding = "15px";
+						message.style.backgroundColor = "#f8d7da";
+						message.style.color = "#721c24";
+						message.style.margin = "10px 0";
+						message.style.textAlign = "center";
+						message.innerHTML =
+							"We've detected that you're using an ad blocker. Some features may not work correctly.";
+						document.body.insertBefore(message, document.body.firstChild);
+					}
+					document.body.removeChild(testAd);
+				}, 100);
+			});
+		</script>
+		<script type="module" crossorigin src="./assets/index-Co_nq2ru.js"></script>
+		<link rel="stylesheet" crossorigin href="./assets/style-Be2aWws-.css">
 	</head>
 	<body>
 		<div id="root"></div>
